@@ -1,0 +1,6 @@
+{
+  "name": "Qalta AI Expense Manager",
+  "description": "Smart AI-powered expense tracker and financial manager with automated receipt scanning, instant OCR extraction, conversational natural language expense logging, budget monitoring, and personalized AI spending insights.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
