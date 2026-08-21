@@ -7,7 +7,8 @@ import {
   Sparkles,
   Camera,
   ArrowUpRight,
-  ArrowDownRight,
+  ArrowDownLeft,
+  ArrowRightLeft,
   AlertTriangle,
   CheckCircle2,
   Receipt as ReceiptIcon,
@@ -15,6 +16,13 @@ import {
   PieChart as PieIcon,
   BarChart3,
   Flame,
+  ShieldAlert,
+  Calendar,
+  Clock,
+  Zap,
+  Mic,
+  Coins,
+  Globe2,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -28,18 +36,42 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { AppTheme, CategoryBudget, Expense, ExpenseCategory, SpendingInsight } from '../types';
-import { CATEGORY_CONFIG, formatCurrency, formatDate } from '../utils/formatters';
+import {
+  AppTheme,
+  CategoryBudget,
+  Expense,
+  ExpenseCategory,
+  SpendingInsight,
+  Subscription,
+  WalletAccount,
+} from '../types';
+import {
+  CATEGORY_CONFIG,
+  calculateDailyAllowance,
+  formatCurrency,
+  formatDate,
+  formatShortDate,
+  getDaysUntilDate,
+  getSubscriptionMonthlyCost,
+} from '../utils/formatters';
 import { CategoryIcon } from './CategoryIcon';
 
 interface Props {
   expenses: Expense[];
   budgets: CategoryBudget[];
+  subscriptions?: Subscription[];
+  wallets?: WalletAccount[];
   currency: string;
+  onOpenVoice: () => void;
   onOpenScanner: () => void;
   onOpenNaturalLog: () => void;
+  onOpenManualAdd?: () => void;
+  onOpenWallets?: () => void;
+  onOpenTransfer?: () => void;
   onSelectExpense: (expense: Expense) => void;
-  onNavigateTab: (tab: 'overview' | 'expenses' | 'budgets' | 'advisor') => void;
+  onNavigateTab: (
+    tab: 'overview' | 'expenses' | 'budgets' | 'subscriptions' | 'calendar' | 'advisor'
+  ) => void;
   insights: SpendingInsight[];
   theme?: AppTheme;
 }
@@ -47,9 +79,15 @@ interface Props {
 export const DashboardOverview: React.FC<Props> = ({
   expenses,
   budgets,
+  subscriptions = [],
+  wallets = [],
   currency,
+  onOpenVoice,
   onOpenScanner,
   onOpenNaturalLog,
+  onOpenManualAdd,
+  onOpenWallets,
+  onOpenTransfer,
   onSelectExpense,
   onNavigateTab,
   insights,
@@ -59,28 +97,49 @@ export const DashboardOverview: React.FC<Props> = ({
 
   // Current month calculation
   const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const currentMonthExpenses = expenses.filter((e) => e.date.startsWith(currentMonthStr));
+  const currentMonthExpenses = expenses.filter(
+    (e) => (!e.type || e.type === 'expense') && e.date.startsWith(currentMonthStr)
+  );
+  const currentMonthIncome = expenses.filter(
+    (e) => e.type === 'income' && e.date.startsWith(currentMonthStr)
+  );
 
   const totalSpentThisMonth = currentMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalIncomeThisMonth = currentMonthIncome.reduce((acc, curr) => acc + curr.amount, 0);
   const totalBudgetLimit = budgets.reduce((acc, curr) => acc + curr.limit, 0);
   const remainingBudget = Math.max(0, totalBudgetLimit - totalSpentThisMonth);
   const percentBudgetUsed =
     totalBudgetLimit > 0 ? Math.min(100, (totalSpentThisMonth / totalBudgetLimit) * 100) : 0;
 
-  // Active subscriptions
-  const subscriptionExpenses = expenses.filter((e) => e.isSubscription);
-  const monthlySubscriptionTotal = subscriptionExpenses.reduce((acc, curr) => {
-    if (curr.subscriptionFrequency === 'weekly') return acc + curr.amount * 4.33;
-    if (curr.subscriptionFrequency === 'yearly') return acc + curr.amount / 12;
-    return acc + curr.amount;
-  }, 0);
+  // Kelo Daily Allowance & Pace
+  const dailyAllowanceData = calculateDailyAllowance(expenses, totalBudgetLimit);
 
-  // Daily average calculation (days passed this month)
-  const today = new Date();
-  const daysPassed = Math.max(1, today.getDate());
-  const dailyAverage = totalSpentThisMonth / daysPassed;
+  // Subo Active Subscriptions & Alerts
+  const activeSubs = subscriptions.filter((s) => s.status === 'active');
+  const monthlySubscriptionTotal = activeSubs.reduce(
+    (acc, curr) => acc + getSubscriptionMonthlyCost(curr),
+    0
+  );
 
-  // Category breakdown data for Recharts Pie
+  const urgentRenewals = activeSubs.filter((s) => {
+    const days = getDaysUntilDate(
+      s.isFreeTrial && s.freeTrialEndDate ? s.freeTrialEndDate : s.nextBillingDate
+    );
+    return days >= 0 && days <= (s.reminderDaysBefore || 3);
+  });
+
+  // Multi-Currency & Net Worth
+  const totalAssets = wallets
+    .filter((w) => w.type !== 'credit')
+    .reduce((sum, w) => sum + Math.max(0, w.balance), 0);
+
+  const totalLiabilities = wallets
+    .filter((w) => w.type === 'credit')
+    .reduce((sum, w) => sum + Math.abs(Math.min(0, w.balance)), 0);
+
+  const netWorth = totalAssets - totalLiabilities;
+
+  // Category breakdown for Recharts Pie
   const categorySpendingMap: Record<string, number> = {};
   currentMonthExpenses.forEach((e) => {
     categorySpendingMap[e.category] = (categorySpendingMap[e.category] || 0) + e.amount;
@@ -94,208 +153,387 @@ export const DashboardOverview: React.FC<Props> = ({
     }))
     .sort((a, b) => b.value - a.value);
 
-  // Daily timeline spending for last 14 days
-  const last14DaysData = Array.from({ length: 10 }).map((_, i) => {
+  // Timeline spending for last 10 days
+  const last10DaysData = Array.from({ length: 10 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (9 - i));
-    const dStr = d.toISOString().slice(0, 10);
-    const dayName = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
-    const dayTotal = expenses
-      .filter((e) => e.date === dStr)
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayLabel = d.toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+    const daySpend = expenses
+      .filter((e) => (!e.type || e.type === 'expense') && e.date === dateStr)
       .reduce((sum, e) => sum + e.amount, 0);
     return {
-      date: dayName,
-      amount: Number(dayTotal.toFixed(2)),
+      date: dateStr,
+      day: dayLabel,
+      amount: daySpend,
     };
   });
 
-  // Recent receipt images
-  const receiptsWithImages = expenses.filter((e) => Boolean(e.receiptImage)).slice(0, 4);
-
   return (
-    <div className="space-y-6 pb-12" id="dashboard-overview-container">
-      {/* Top Banner: AI Overview & Quick Actions */}
-      <div className="relative overflow-hidden rounded-2xl theme-bg-card theme-border border p-6 shadow-xl">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -left-12 -bottom-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+    <div className="space-y-6 animate-fade-in" id="spense-dashboard-overview-container">
+      {/* Spense Signature Voice AI Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-[#0f172a] via-[#111827] to-[#0b1329] border border-cyan-500/20 text-white shadow-xl shadow-cyan-950/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        {/* Glow ambient background */}
+        <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -top-10 w-48 h-48 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Qalta AI Financial Engine • Active</span>
+        <div className="relative z-10 flex items-center gap-4">
+          {/* Pulsating Voice Orb Button */}
+          <button
+            onClick={onOpenVoice}
+            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-400 via-teal-500 to-cyan-400 p-[1.5px] shadow-lg shadow-emerald-500/30 flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+            title="Tap to speak your expense"
+            id="hero-voice-trigger-btn"
+          >
+            <div className="w-full h-full bg-[#0d1117] rounded-[14px] flex items-center justify-center relative overflow-hidden">
+              <Mic className="w-6 h-6 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 bg-emerald-400/10 animate-ping rounded-full" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold theme-text-main tracking-tight">
-              Smart Expense Manager & Receipts
-            </h1>
-            <p className="text-xs sm:text-sm theme-text-secondary leading-relaxed">
-              Capture receipts with automated OCR, track category budgets, and let AI analyze your
-              cashflow habits in real time.
+          </button>
+
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black tracking-wider uppercase text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md border border-emerald-400/30">
+                Spense Voice AI
+              </span>
+              <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+                Natural Speech Financial Assistant
+              </span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-black text-white mt-1 tracking-tight">
+              "Spent $18.50 on lunch with Apple Pay"
+            </h2>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Speak or snap receipts — AI extracts merchant, price, category, and wallet instantly.
             </p>
           </div>
+        </div>
 
-          {/* Quick Trigger Buttons */}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={onOpenScanner}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              id="dashboard-scan-receipt-btn"
-            >
-              <Camera className="w-4 h-4" />
-              <span>Scan Receipt</span>
-            </button>
+        <div className="relative z-10 flex items-center gap-2.5 w-full md:w-auto">
+          <button
+            onClick={onOpenVoice}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs shadow-lg shadow-emerald-400/25 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            id="hero-voice-action-btn"
+          >
+            <Mic className="w-4 h-4" />
+            <span>Speak Now</span>
+          </button>
 
-            <button
-              onClick={onOpenNaturalLog}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl theme-bg-subtle hover:bg-slate-500/10 theme-border border theme-text-main text-xs sm:text-sm font-medium shadow-xs transition-all"
-              id="dashboard-quick-log-btn"
-            >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>AI Quick Log</span>
-            </button>
-          </div>
+          <button
+            onClick={onOpenScanner}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold text-xs backdrop-blur-md transition-all cursor-pointer"
+            id="hero-scan-action-btn"
+          >
+            <Camera className="w-4 h-4 text-emerald-400" />
+            <span>Scan Bill</span>
+          </button>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* Subo Proactive Alert Banner (if renewals/free trials ending) */}
+      {urgentRenewals.length > 0 && (
+        <div
+          onClick={() => onNavigateTab('subscriptions')}
+          className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 cursor-pointer hover:bg-amber-500/15 transition-all shadow-xs"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                {urgentRenewals.length === 1
+                  ? `Upcoming Subscription: ${urgentRenewals[0].name}`
+                  : `${urgentRenewals.length} Subscriptions Due for Renewal`}
+              </div>
+              <p className="text-[11px] theme-text-secondary">
+                {urgentRenewals[0].isFreeTrial
+                  ? `Trial ending soon (${formatShortDate(urgentRenewals[0].freeTrialEndDate || '')}) — review to avoid charges.`
+                  : `Next billing date is approaching (${formatShortDate(urgentRenewals[0].nextBillingDate)}).`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0">
+            <span>Manage</span>
+            <ChevronRight className="w-4 h-4" />
+          </div>
+        </div>
+      )}
+
+      {/* Top Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold theme-text-main tracking-tight flex items-center gap-2">
+            <span>Financial Overview</span>
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              Multi-Currency
+            </span>
+          </h1>
+          <p className="text-xs theme-text-secondary mt-0.5">
+            Real-time daily allowance, net worth aggregate, and subscription timeline
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Natural AI */}
+          <button
+            onClick={onOpenNaturalLog}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl theme-bg-card theme-border border hover:theme-bg-subtle theme-text-main text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            id="quick-ai-quicklog-btn"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>AI QuickLog</span>
+          </button>
+
+          {/* Add Manual */}
+          {onOpenManualAdd && (
+            <button
+              onClick={onOpenManualAdd}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              id="quick-add-transaction-btn"
+            >
+              <span>+ Record Entry</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Executive Metric Cards (Kelo Daily Allowance + Fineyo Net Worth + Subo Spend) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Spend */}
-        <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
+        {/* 1. Daily Allowance / Left-to-Spend */}
+        <div
+          onClick={() => onNavigateTab('budgets')}
+          className="theme-bg-card p-5 rounded-3xl theme-border border relative overflow-hidden shadow-xs hover:border-emerald-500/40 transition-all cursor-pointer group"
+          id="kelo-daily-allowance-card"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium theme-text-muted">Total Spent This Month</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+            <span className="text-xs font-semibold theme-text-secondary">Daily Allowance</span>
+            <div className="w-8 h-8 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <Zap className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold theme-text-main font-mono">
-              {formatCurrency(totalSpentThisMonth, currency)}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs theme-text-muted">
-              <span className="font-medium">
-                {currentMonthExpenses.length} transactions
-              </span>
-            </div>
+
+          <div className="text-2xl font-black theme-text-main font-mono mt-3">
+            {formatCurrency(dailyAllowanceData.dailyAllowanceRemaining, currency)}
+            <span className="text-xs font-sans font-normal theme-text-muted"> /day</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 mt-2 text-[11px]">
+            <span
+              className={`font-bold capitalize ${
+                dailyAllowanceData.paceStatus === 'ahead'
+                  ? 'text-emerald-500'
+                  : dailyAllowanceData.paceStatus === 'on_track'
+                  ? 'text-cyan-500'
+                  : 'text-rose-500'
+              }`}
+            >
+              ● {dailyAllowanceData.paceStatus.replace('_', ' ')}
+            </span>
+            <span className="theme-text-muted">• {dailyAllowanceData.daysRemainingInMonth}d left</span>
           </div>
         </div>
 
-        {/* Remaining Budget */}
-        <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
+        {/* 2. Monthly Outflow / Budget */}
+        <div
+          onClick={() => onNavigateTab('budgets')}
+          className="theme-bg-card p-5 rounded-3xl theme-border border relative overflow-hidden shadow-xs hover:border-emerald-500/40 transition-all cursor-pointer group"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium theme-text-muted">Remaining Budget</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center">
-              <Wallet className="w-4 h-4" />
+            <span className="text-xs font-semibold theme-text-secondary">Month Outflow</span>
+            <div className="w-8 h-8 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-              {formatCurrency(remainingBudget, currency)}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs theme-text-muted">
-              <span>{percentBudgetUsed.toFixed(0)}% of limit used</span>
-            </div>
+
+          <div className="text-2xl font-black theme-text-main font-mono mt-3">
+            {formatCurrency(totalSpentThisMonth, currency)}
+          </div>
+
+          <div className="flex items-center gap-1.5 text-[11px] theme-text-muted mt-2">
+            <span>{percentBudgetUsed.toFixed(0)}% of monthly target</span>
           </div>
         </div>
 
-        {/* Daily Average */}
-        <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
+        {/* 3. Subo Monthly Recurring Commitments */}
+        <div
+          onClick={() => onNavigateTab('subscriptions')}
+          className="theme-bg-card p-5 rounded-3xl theme-border border relative overflow-hidden shadow-xs hover:border-emerald-500/40 transition-all cursor-pointer group"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium theme-text-muted">Daily Average Burn</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center">
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-amber-500 dark:text-amber-400 font-mono">
-              {formatCurrency(dailyAverage, currency)}
-              <span className="text-xs theme-text-muted font-normal"> /day</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs theme-text-muted">
-              <span>Day {daysPassed} of month</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Subscriptions */}
-        <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium theme-text-muted">Recurring Subscriptions</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 dark:text-purple-400 flex items-center justify-center">
+            <span className="text-xs font-semibold theme-text-secondary">Subscriptions (Subo)</span>
+            <div className="w-8 h-8 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
               <Repeat className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-mono">
-              {formatCurrency(monthlySubscriptionTotal, currency)}
-              <span className="text-xs theme-text-muted font-normal"> /mo</span>
+
+          <div className="text-2xl font-black theme-text-main font-mono mt-3">
+            {formatCurrency(monthlySubscriptionTotal, currency)}
+            <span className="text-xs font-sans font-normal theme-text-muted"> /mo</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-[11px] theme-text-muted mt-2">
+            <span>{activeSubs.length} active recurring plans</span>
+          </div>
+        </div>
+
+        {/* 4. Total Multi-Currency Net Worth */}
+        <div
+          onClick={onOpenWallets}
+          className="theme-bg-card p-5 rounded-3xl theme-border border relative overflow-hidden shadow-xs hover:border-emerald-500/40 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold theme-text-secondary">Net Worth (Liquid)</span>
+            <div className="w-8 h-8 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+              <Wallet className="w-4 h-4" />
             </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs theme-text-muted">
-              <span>{subscriptionExpenses.length} active bills</span>
-            </div>
+          </div>
+
+          <div className="text-2xl font-black theme-text-main font-mono mt-3">
+            {formatCurrency(netWorth, currency)}
+          </div>
+
+          <div className="flex items-center gap-1.5 text-[11px] theme-text-muted mt-2">
+            <span>{wallets.length} connected accounts</span>
           </div>
         </div>
       </div>
 
-      {/* Monthly Budget Progress Bar */}
-      <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md space-y-3">
-        <div className="flex items-center justify-between">
+      {/* Multi-Currency Wallets Quick Bar */}
+      {wallets.length > 0 && (
+        <div className="theme-bg-card p-4 sm:p-5 rounded-3xl theme-border border shadow-xs">
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-bold theme-text-main">Multi-Currency Accounts</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {onOpenTransfer && (
+                <button
+                  onClick={onOpenTransfer}
+                  className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                >
+                  <ArrowRightLeft className="w-3 h-3" />
+                  <span>Transfer</span>
+                </button>
+              )}
+              {onOpenWallets && (
+                <button
+                  onClick={onOpenWallets}
+                  className="text-[11px] font-bold theme-text-secondary hover:theme-text-main transition-colors cursor-pointer"
+                >
+                  Manage Wallets →
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {wallets.map((w) => (
+              <div
+                key={w.id}
+                onClick={onOpenWallets}
+                className="p-3.5 rounded-2xl theme-bg-subtle theme-border border hover:theme-bg-muted transition-all cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold theme-text-secondary truncate">{w.name}</span>
+                  <div
+                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                    style={{ backgroundColor: w.color || '#3b82f6' }}
+                  />
+                </div>
+                <div
+                  className={`text-xs sm:text-sm font-mono font-bold mt-1.5 ${
+                    w.type === 'credit' && w.balance < 0 ? 'text-rose-500' : 'theme-text-main'
+                  }`}
+                >
+                  {formatCurrency(w.balance, w.currency || currency)}
+                </div>
+                <span className="text-[9px] uppercase tracking-wider font-bold theme-text-muted mt-0.5 block">
+                  {w.type}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Visual Analytics & Recent Ledger Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Outflow Trend Chart (2 Cols) */}
+        <div className="lg:col-span-2 theme-bg-card rounded-3xl p-5 shadow-xs theme-border border space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-500" />
+              <h3 className="text-sm font-bold theme-text-main">Daily Outflow Trend</h3>
+            </div>
+            <span className="text-xs theme-text-muted">Last 10 Days</span>
+          </div>
+
+          <div className="h-56 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={last10DaysData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }}
+                  tickFormatter={(val) => `$${val}`}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="theme-bg-card theme-border border p-2.5 rounded-2xl shadow-xl text-xs font-mono">
+                          <div className="font-bold theme-text-main">{data.day}</div>
+                          <div className="text-emerald-500 font-bold mt-1">
+                            {formatCurrency(data.amount, currency)}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="amount" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Category Breakdown Pie Chart */}
+        <div className="theme-bg-card rounded-3xl p-5 shadow-xs theme-border border space-y-3 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold theme-text-main">Monthly Overall Budget</h3>
-            <p className="text-xs theme-text-secondary">
-              {formatCurrency(totalSpentThisMonth, currency)} spent of{' '}
-              {formatCurrency(totalBudgetLimit, currency)} total limit
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigateTab('budgets')}
-            className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-medium flex items-center gap-1"
-          >
-            Manage Limits <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Bar */}
-        <div className="w-full h-3 theme-bg-subtle theme-border border rounded-full overflow-hidden p-0.5">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              percentBudgetUsed > 90
-                ? 'bg-rose-500'
-                : percentBudgetUsed > 75
-                ? 'bg-amber-500'
-                : 'bg-emerald-500'
-            }`}
-            style={{ width: `${percentBudgetUsed}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Charts Section: Two Column (Category Donut & Daily Trend) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Chart: Category Breakdown Donut */}
-        <div className="lg:col-span-6 p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-semibold theme-text-main flex items-center gap-2">
-                <PieIcon className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                Category Distribution
-              </h3>
-              <p className="text-xs theme-text-secondary">Spending by category this month</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PieIcon className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-bold theme-text-main">Category Breakdown</h3>
+              </div>
+              <span className="text-xs theme-text-muted">This Month</span>
             </div>
-            <span className="text-xs font-mono theme-text-muted">
-              {categoryChartData.length} categories
-            </span>
-          </div>
 
-          <div className="h-56 w-full flex items-center justify-center">
-            {categoryChartData.length > 0 ? (
+            <div className="h-44 w-full relative mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={categoryChartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
+                    innerRadius={48}
+                    outerRadius={70}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -304,222 +542,128 @@ export const DashboardOverview: React.FC<Props> = ({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(val: any) => formatCurrency(Number(val), currency)}
-                    contentStyle={{
-                      backgroundColor: isDark ? '#141414' : '#ffffff',
-                      borderColor: isDark ? '#262626' : '#d8d8d8',
-                      borderRadius: '0.75rem',
-                      fontSize: '12px',
-                      color: isDark ? '#f8fafc' : '#111827',
-                      boxShadow: isDark ? '0 10px 15px -3px rgb(0 0 0 / 0.5)' : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const item = payload[0];
+                        return (
+                          <div className="theme-bg-card theme-border border p-2.5 rounded-2xl shadow-xl text-xs font-mono">
+                            <div className="font-bold theme-text-main">{item.name}</div>
+                            <div className="text-emerald-500 font-bold mt-0.5">
+                              {formatCurrency(Number(item.value), currency)}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
                   />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="text-xs theme-text-muted italic">No spending records yet</div>
-            )}
+            </div>
           </div>
 
-          {/* Top 4 Legend Items */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t theme-border">
-            {categoryChartData.slice(0, 4).map((c, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 truncate">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: c.color }}
-                  />
+          <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+            {categoryChartData.slice(0, 4).map((c) => (
+              <div key={c.name} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
                   <span className="theme-text-secondary truncate">{c.name}</span>
                 </div>
-                <span className="font-mono theme-text-main font-medium">{formatCurrency(c.value, currency)}</span>
+                <span className="font-mono font-semibold theme-text-main">
+                  {formatCurrency(c.value, currency)}
+                </span>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Right Chart: 10-Day Spending Timeline Bar Chart */}
-        <div className="lg:col-span-6 p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-semibold theme-text-main flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                Recent Daily Activity
-              </h3>
-              <p className="text-xs theme-text-secondary">10-day spending timeline</p>
-            </div>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Daily Outflow</span>
-          </div>
-
-          <div className="h-56 w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={last14DaysData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#262626' : '#e2e2e2'} vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  stroke={isDark ? '#737373' : '#6b7280'}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke={isDark ? '#737373' : '#6b7280'}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(val) => `$${val}`}
-                />
-                <Tooltip
-                  formatter={(val: any) => formatCurrency(Number(val), currency)}
-                  contentStyle={{
-                    backgroundColor: isDark ? '#141414' : '#ffffff',
-                    borderColor: isDark ? '#262626' : '#d8d8d8',
-                    borderRadius: '0.75rem',
-                    fontSize: '12px',
-                    color: isDark ? '#f8fafc' : '#111827',
-                    boxShadow: isDark ? '0 10px 15px -3px rgb(0 0 0 / 0.5)' : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  }}
-                />
-                <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t theme-border text-xs theme-text-secondary">
-            <span>Burn trend: Stable</span>
-            <button
-              onClick={() => onNavigateTab('expenses')}
-              className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-medium flex items-center gap-1"
-            >
-              View Full Ledger <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Scanned Receipts Carousel / Gallery */}
-      <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md space-y-4">
+      {/* Recent Ledger Stream */}
+      <div className="theme-bg-card rounded-3xl p-5 shadow-xs theme-border border space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <ReceiptIcon className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold theme-text-main">Scanned Receipts Archive</h3>
-              <p className="text-xs theme-text-secondary">Recent high-res receipts & itemized line logs</p>
-            </div>
+          <div>
+            <h3 className="text-base font-bold theme-text-main">Recent Activity & Ledger</h3>
+            <p className="text-xs theme-text-secondary">Latest transactions across all accounts</p>
           </div>
 
           <button
-            onClick={onOpenScanner}
-            className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500"
+            onClick={() => onNavigateTab('expenses')}
+            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
           >
-            <Camera className="w-3.5 h-3.5" /> Scan New
+            View Full Ledger →
           </button>
         </div>
 
-        {receiptsWithImages.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {receiptsWithImages.map((expense) => (
+        <div className="divide-y theme-border overflow-hidden">
+          {expenses.slice(0, 6).map((exp) => {
+            const isIncome = exp.type === 'income';
+            const isTransfer = exp.type === 'transfer';
+            const wallet = wallets.find((w) => w.id === exp.walletAccountId);
+
+            return (
               <div
-                key={expense.id}
-                onClick={() => onSelectExpense(expense)}
-                className="group relative theme-bg-subtle hover:theme-bg-muted border theme-border hover:border-emerald-500/50 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 shadow-xs"
+                key={exp.id}
+                onClick={() => onSelectExpense(exp)}
+                className="py-3 flex items-center justify-between gap-3 hover:theme-bg-subtle transition-colors group cursor-pointer"
               >
-                {/* Thumbnail Header Image */}
-                <div className="h-32 w-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
-                  <img
-                    src={expense.receiptImage}
-                    alt={expense.merchant}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
-                  />
-                  {expense.receiptConfidence && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[10px] font-mono text-emerald-400 border border-emerald-500/30">
-                      {expense.receiptConfidence}% OCR
+                <div className="flex items-center gap-3 min-w-0">
+                  {isIncome ? (
+                    <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                      <ArrowDownLeft className="w-4 h-4" />
                     </div>
-                  )}
-                </div>
-
-                {/* Details */}
-                <div className="p-3 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs theme-text-main truncate max-w-[130px]">
-                      {expense.merchant}
-                    </span>
-                    <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(expense.amount, expense.currency)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] theme-text-muted">
-                    <span>{expense.category}</span>
-                    <span>{formatDate(expense.date)}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-8 text-center theme-bg-subtle rounded-xl border border-dashed theme-border">
-            <ReceiptIcon className="w-8 h-8 mx-auto theme-text-muted mb-2" />
-            <p className="text-xs theme-text-secondary mb-3">No scanned receipts yet.</p>
-            <button
-              onClick={onOpenScanner}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-semibold shadow-lg shadow-emerald-500/20"
-            >
-              Scan Your First Receipt
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* AI Financial Insights Highlight Card */}
-      {insights.length > 0 && (
-        <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-              <h3 className="text-sm font-semibold theme-text-main">Qalta AI Financial Insights</h3>
-            </div>
-            <button
-              onClick={() => onNavigateTab('advisor')}
-              className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-medium flex items-center gap-1"
-            >
-              Open AI Advisor <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {insights.slice(0, 3).map((insight) => (
-              <div
-                key={insight.id}
-                onClick={() => onNavigateTab('advisor')}
-                className="p-3.5 rounded-xl theme-bg-subtle hover:theme-bg-muted border theme-border shadow-xs cursor-pointer transition-all space-y-1.5"
-              >
-                <div className="flex items-center gap-2">
-                  {insight.type === 'alert' ? (
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  ) : insight.type === 'celebration' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  ) : isTransfer ? (
+                    <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                      <ArrowRightLeft className="w-4 h-4" />
+                    </div>
                   ) : (
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                    <CategoryIcon category={exp.category} size="md" />
                   )}
-                  <span className="text-xs font-semibold theme-text-main truncate">
-                    {insight.title}
-                  </span>
-                </div>
-                <p className="text-[11px] theme-text-secondary line-clamp-2 leading-relaxed">
-                  {insight.message}
-                </p>
-                {insight.actionable && (
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium pt-1">
-                    Tip: {insight.actionable}
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold theme-text-main truncate group-hover:text-emerald-500 transition-colors">
+                        {exp.merchant}
+                      </span>
+                      {exp.receiptImage && (
+                        <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-emerald-500/10 text-emerald-500 rounded">
+                          Receipt
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] theme-text-muted mt-0.5">
+                      <span>{formatDate(exp.date)}</span>
+                      <span>•</span>
+                      <span>{exp.category}</span>
+                      {wallet && (
+                        <>
+                          <span>•</span>
+                          <span>{wallet.name}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div
+                    className={`text-xs sm:text-sm font-mono font-bold ${
+                      isIncome
+                        ? 'text-emerald-500'
+                        : isTransfer
+                        ? 'text-indigo-400'
+                        : 'theme-text-main'
+                    }`}
+                  >
+                    {isIncome ? '+' : isTransfer ? '↔' : '-'}
+                    {formatCurrency(exp.amount, exp.currency || currency)}
+                  </div>
+                  <span className="text-[10px] theme-text-muted">{exp.paymentMethod}</span>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 };

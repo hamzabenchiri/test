@@ -45,7 +45,7 @@ export const AiAdvisor: React.FC<Props> = ({
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Hello! I'm your Qalta AI Financial Strategist. I've analyzed your scanned receipts, monthly budget limits, and spending pace. How can I assist you with your money today?",
+      text: "Hello! I'm your Spense AI Financial Strategist. I've analyzed your scanned receipts, monthly budget limits, and spending pace. How can I assist you with your money today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedActions: [
         'Analyze my top spending categories',

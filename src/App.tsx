@@ -1,24 +1,44 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Navbar } from './components/Navbar';
+import { Navbar, NavTabType } from './components/Navbar';
 import { DashboardOverview } from './components/DashboardOverview';
 import { ExpensesList } from './components/ExpensesList';
+import { SubscriptionsManager } from './components/SubscriptionsManager';
+import { PaymentCalendar } from './components/PaymentCalendar';
 import { BudgetsManager } from './components/BudgetsManager';
 import { AiAdvisor } from './components/AiAdvisor';
 import { ReceiptScannerModal } from './components/ReceiptScannerModal';
 import { NaturalLoggerModal } from './components/NaturalLoggerModal';
 import { ExpenseFormModal } from './components/ExpenseFormModal';
 import { ReceiptDetailModal } from './components/ReceiptDetailModal';
-import { AppTheme, CategoryBudget, Expense, SpendingInsight } from './types';
-import { INITIAL_CATEGORY_BUDGETS, INITIAL_EXPENSES } from './data/sampleData';
+import { WalletsManagerModal } from './components/WalletsManagerModal';
+import { TransferModal } from './components/TransferModal';
+import { QaltaVoiceModal } from './components/QaltaVoiceModal';
+import { QaltaFloatingDock } from './components/QaltaFloatingDock';
+import {
+  AppTheme,
+  CategoryBudget,
+  Expense,
+  FinancialGoal,
+  SpendingInsight,
+  Subscription,
+  WalletAccount,
+} from './types';
+import {
+  INITIAL_BUDGETS,
+  INITIAL_EXPENSES,
+  INITIAL_FINANCIAL_GOALS,
+  INITIAL_SUBSCRIPTIONS,
+  INITIAL_WALLETS,
+} from './data/sampleData';
 
 export default function App() {
-  // Theme state: dark (#0A0A0A) vs light (#EBEBEB)
+  // Theme state: dark (#08080A) vs light (#F4F5F8)
   const [theme, setTheme] = useState<AppTheme>(() => {
     const saved = localStorage.getItem('qalta_theme_v1');
     return saved === 'light' || saved === 'dark' ? saved : 'dark';
   });
 
-  // Persistence state
+  // Persistent States
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const saved = localStorage.getItem('qalta_expenses_v1');
     if (saved) {
@@ -31,6 +51,42 @@ export default function App() {
     return INITIAL_EXPENSES;
   });
 
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => {
+    const saved = localStorage.getItem('qalta_subscriptions_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing stored subscriptions', e);
+      }
+    }
+    return INITIAL_SUBSCRIPTIONS;
+  });
+
+  const [wallets, setWallets] = useState<WalletAccount[]>(() => {
+    const saved = localStorage.getItem('qalta_wallets_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing stored wallets', e);
+      }
+    }
+    return INITIAL_WALLETS;
+  });
+
+  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>(() => {
+    const saved = localStorage.getItem('qalta_goals_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing stored goals', e);
+      }
+    }
+    return INITIAL_FINANCIAL_GOALS;
+  });
+
   const [budgets, setBudgets] = useState<CategoryBudget[]>(() => {
     const saved = localStorage.getItem('qalta_budgets_v1');
     if (saved) {
@@ -40,7 +96,7 @@ export default function App() {
         console.error('Error parsing stored budgets', e);
       }
     }
-    return INITIAL_CATEGORY_BUDGETS;
+    return INITIAL_BUDGETS;
   });
 
   const [currency, setCurrency] = useState<string>(() => {
@@ -48,44 +104,51 @@ export default function App() {
   });
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'overview' | 'expenses' | 'budgets' | 'advisor'>('overview');
+  const [activeTab, setActiveTab] = useState<NavTabType>('overview');
 
   // Modals state
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isNaturalLogOpen, setIsNaturalLogOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
+  const [isWalletsModalOpen, setIsWalletsModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [selectedExpenseForReceipt, setSelectedExpenseForReceipt] = useState<Expense | null>(null);
+  const [quickAddDate, setQuickAddDate] = useState<string | undefined>(undefined);
 
   // AI Financial Insights state
   const [insights, setInsights] = useState<SpendingInsight[]>([
     {
       id: 'ins-1',
       type: 'tip',
-      title: 'Groceries vs. Dining Balance',
-      message: 'Your dining-out expenses represent 38% of total spending. Cooking 1 extra meal at home can save ~$60/week.',
+      title: 'Dining vs. Groceries Optimal Ratio',
+      message:
+        'Dining-out expenses represent 34% of monthly outflow. Preparing 1 additional meal at home can save ~$60/week.',
       impactAmount: 60,
-      actionable: 'Set a weekly dining budget limit of $120.',
+      actionable: 'Set a dining budget ceiling of $120/week in Budgets.',
     },
     {
       id: 'ins-2',
       type: 'subscription',
-      title: '2 Active Recurring Subscriptions',
-      message: 'You have Spotify Family ($19.99/mo) and Equinox ($140/mo) active.',
-      impactAmount: 159.99,
-      actionable: 'Review renewal dates in Budgets tab.',
+      title: 'Adobe Trial Ending in 2 Days',
+      message:
+        'Adobe Creative Cloud ($54.99/mo) free trial ends soon. Cancel before rollover if not utilizing Photoshop daily.',
+      impactAmount: 54.99,
+      actionable: 'Manage in Subscriptions hub.',
     },
     {
       id: 'ins-3',
       type: 'celebration',
-      title: 'Housing Utilities On Target',
-      message: 'Your utility and recurring essentials are within projected safe ranges for this month.',
+      title: '50/30/20 Rule in Healthy Balance',
+      message:
+        'Essential Needs are currently at 46% of total inflow, leaving strong buffer for Savings and Debt payoff.',
     },
   ]);
-  const [healthScore, setHealthScore] = useState<number>(88);
-  const [forecastSpend, setForecastSpend] = useState<number>(1420);
+  const [healthScore, setHealthScore] = useState<number>(92);
+  const [forecastSpend, setForecastSpend] = useState<number>(1380);
   const [summaryParagraph, setSummaryParagraph] = useState<string>(
-    'Your budget discipline is steady. Discretionary spending in Food & Dining is the primary optimization lever.'
+    'Financial velocity is optimal. Your daily allowance is on pace with healthy margin in your discretionary envelope.'
   );
   const [isRefreshingInsights, setIsRefreshingInsights] = useState(false);
 
@@ -103,6 +166,18 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('qalta_expenses_v1', JSON.stringify(expenses));
   }, [expenses]);
+
+  useEffect(() => {
+    localStorage.setItem('qalta_subscriptions_v1', JSON.stringify(subscriptions));
+  }, [subscriptions]);
+
+  useEffect(() => {
+    localStorage.setItem('qalta_wallets_v1', JSON.stringify(wallets));
+  }, [wallets]);
+
+  useEffect(() => {
+    localStorage.setItem('qalta_goals_v1', JSON.stringify(financialGoals));
+  }, [financialGoals]);
 
   useEffect(() => {
     localStorage.setItem('qalta_budgets_v1', JSON.stringify(budgets));
@@ -138,6 +213,8 @@ export default function App() {
         body: JSON.stringify({
           expenses,
           budgets,
+          subscriptions,
+          wallets,
           currency,
         }),
       });
@@ -157,13 +234,13 @@ export default function App() {
       if (data.summaryParagraph) {
         setSummaryParagraph(data.summaryParagraph);
       }
-      showToast('AI financial insights updated');
+      showToast('Spense AI financial insights updated');
     } catch (err) {
       console.warn('AI Insights fallback:', err);
     } finally {
       setIsRefreshingInsights(false);
     }
-  }, [expenses, budgets, currency]);
+  }, [expenses, budgets, subscriptions, wallets, currency]);
 
   // Expense Handlers
   const handleSaveNewExpense = (expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
@@ -173,13 +250,30 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
     setExpenses((prev) => [newExpense, ...prev]);
-    showToast(`Logged expense: ${newExpense.merchant} (${newExpense.amount.toFixed(2)})`);
+
+    // Update wallet balance if specified
+    if (newExpense.walletAccountId) {
+      setWallets((prevWallets) =>
+        prevWallets.map((w) => {
+          if (w.id === newExpense.walletAccountId) {
+            const isInc = newExpense.type === 'income';
+            return {
+              ...w,
+              balance: isInc ? w.balance + newExpense.amount : w.balance - newExpense.amount,
+            };
+          }
+          return w;
+        })
+      );
+    }
+
+    showToast(`Logged transaction: ${newExpense.merchant} (${newExpense.amount.toFixed(2)})`);
   };
 
   const handleUpdateExpense = (updated: Expense | Omit<Expense, 'id' | 'createdAt'>) => {
     if ('id' in updated) {
       setExpenses((prev) => prev.map((e) => (e.id === updated.id ? (updated as Expense) : e)));
-      showToast(`Updated expense: ${updated.merchant}`);
+      showToast(`Updated: ${updated.merchant}`);
     } else {
       handleSaveNewExpense(updated);
     }
@@ -187,7 +281,7 @@ export default function App() {
 
   const handleDeleteExpense = (id: string) => {
     setExpenses((prev) => prev.filter((e) => e.id !== id));
-    showToast('Expense deleted');
+    showToast('Transaction removed');
   };
 
   const handleDuplicateExpense = (expense: Expense) => {
@@ -201,24 +295,170 @@ export default function App() {
     showToast(`Duplicated: ${duplicated.merchant}`);
   };
 
+  const handleImportExpenses = (imported: Expense[]) => {
+    setExpenses((prev) => [...imported, ...prev]);
+    showToast(`Imported ${imported.length} transactions from CSV`);
+  };
+
+  // Subscription Handlers
+  const handleAddSubscription = (subData: Omit<Subscription, 'id' | 'createdAt'>) => {
+    const newSub: Subscription = {
+      ...subData,
+      id: `sub-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setSubscriptions((prev) => [...prev, newSub]);
+    showToast(`Added subscription: ${newSub.name}`);
+  };
+
+  const handleUpdateSubscription = (sub: Subscription) => {
+    setSubscriptions((prev) => prev.map((s) => (s.id === sub.id ? sub : s)));
+    showToast(`Updated subscription: ${sub.name}`);
+  };
+
+  const handleDeleteSubscription = (id: string) => {
+    setSubscriptions((prev) => prev.filter((s) => s.id !== id));
+    showToast('Subscription deleted');
+  };
+
+  const handleLogRenewalExpense = (sub: Subscription) => {
+    const renewalExpense: Expense = {
+      id: `exp-sub-${Date.now()}`,
+      type: 'expense',
+      merchant: `${sub.name} (Renewal)`,
+      amount: sub.amount,
+      currency: sub.currency || currency,
+      category: sub.category,
+      date: new Date().toISOString().slice(0, 10),
+      time: '00:01',
+      paymentMethod: sub.paymentMethod,
+      walletAccountId: sub.walletAccountId,
+      isSubscription: true,
+      subscriptionId: sub.id,
+      notes: `Automatic recurring renewal (${sub.billingCycle})`,
+      createdAt: new Date().toISOString(),
+    };
+
+    setExpenses((prev) => [renewalExpense, ...prev]);
+
+    // Advance next billing date
+    const nextDate = new Date();
+    if (sub.billingCycle === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+    else if (sub.billingCycle === 'yearly') nextDate.setFullYear(nextDate.getFullYear() + 1);
+    else if (sub.billingCycle === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+    else nextDate.setMonth(nextDate.getMonth() + 3);
+
+    setSubscriptions((prev) =>
+      prev.map((s) =>
+        s.id === sub.id ? { ...s, nextBillingDate: nextDate.toISOString().slice(0, 10) } : s
+      )
+    );
+
+    showToast(`Logged charge for ${sub.name}`);
+  };
+
+  // Wallet Handlers
+  const handleAddWallet = (walletData: Omit<WalletAccount, 'id'>) => {
+    const newWallet: WalletAccount = {
+      ...walletData,
+      id: `wallet-${Date.now()}`,
+    };
+    setWallets((prev) => [...prev, newWallet]);
+    showToast(`Created account: ${newWallet.name}`);
+  };
+
+  const handleUpdateWallet = (wallet: WalletAccount) => {
+    setWallets((prev) => prev.map((w) => (w.id === wallet.id ? wallet : w)));
+    showToast(`Updated account: ${wallet.name}`);
+  };
+
+  const handleDeleteWallet = (id: string) => {
+    setWallets((prev) => prev.filter((w) => w.id !== id));
+    showToast('Account removed');
+  };
+
+  const handleExecuteTransfer = (
+    sourceWalletId: string,
+    destWalletId: string,
+    amount: number,
+    date: string,
+    notes?: string
+  ) => {
+    const sourceW = wallets.find((w) => w.id === sourceWalletId);
+    const destW = wallets.find((w) => w.id === destWalletId);
+
+    // Update balances
+    setWallets((prev) =>
+      prev.map((w) => {
+        if (w.id === sourceWalletId) return { ...w, balance: w.balance - amount };
+        if (w.id === destWalletId) return { ...w, balance: w.balance + amount };
+        return w;
+      })
+    );
+
+    // Record transfer transaction
+    const transferExpense: Expense = {
+      id: `exp-trans-${Date.now()}`,
+      type: 'transfer',
+      merchant: `Transfer: ${sourceW?.name || 'Account'} → ${destW?.name || 'Account'}`,
+      amount,
+      currency,
+      category: 'Investment',
+      date,
+      time: '12:00',
+      paymentMethod: 'Bank Transfer',
+      walletAccountId: sourceWalletId,
+      destinationWalletId: destWalletId,
+      notes,
+      createdAt: new Date().toISOString(),
+    };
+
+    setExpenses((prev) => [transferExpense, ...prev]);
+    showToast(`Transferred ${currency} ${amount.toFixed(2)} between accounts`);
+  };
+
+  // Financial Goals Handlers
+  const handleAddGoal = (goalData: Omit<FinancialGoal, 'id'>) => {
+    const newGoal: FinancialGoal = {
+      ...goalData,
+      id: `goal-${Date.now()}`,
+    };
+    setFinancialGoals((prev) => [...prev, newGoal]);
+    showToast(`Created goal: ${newGoal.title}`);
+  };
+
   const handleResetSampleData = () => {
-    if (window.confirm('Reset ledger with sample receipts and default budgets?')) {
+    if (
+      window.confirm(
+        'Reset Spense ledger, subscriptions, multi-currency accounts, and goals with fresh demo data?'
+      )
+    ) {
       setExpenses(INITIAL_EXPENSES);
-      setBudgets(INITIAL_CATEGORY_BUDGETS);
+      setSubscriptions(INITIAL_SUBSCRIPTIONS);
+      setWallets(INITIAL_WALLETS);
+      setFinancialGoals(INITIAL_FINANCIAL_GOALS);
+      setBudgets(INITIAL_BUDGETS);
       setCurrency('USD');
       localStorage.removeItem('qalta_expenses_v1');
+      localStorage.removeItem('qalta_subscriptions_v1');
+      localStorage.removeItem('qalta_wallets_v1');
+      localStorage.removeItem('qalta_goals_v1');
       localStorage.removeItem('qalta_budgets_v1');
       localStorage.removeItem('qalta_currency_v1');
-      showToast('Restored sample receipts and budgets');
+      showToast('Restored Spense sample data');
     }
   };
 
   return (
-    <div className={`min-h-screen theme-bg-app theme-text-main flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-500 ${theme === 'dark' ? 'dark' : ''}`}>
-      {/* Toast Banner */}
+    <div
+      className={`min-h-screen theme-bg-app theme-text-main flex flex-col font-sans pb-20 selection:bg-emerald-500/20 selection:text-emerald-500 ${
+        theme === 'dark' ? 'dark' : ''
+      }`}
+    >
+      {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl theme-bg-card theme-text-main font-medium text-xs shadow-xl theme-border border animate-fade-in flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <div className="fixed top-20 right-5 z-50 px-4 py-2.5 rounded-2xl theme-bg-card theme-text-main font-semibold text-xs shadow-2xl theme-border border animate-fade-in flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -227,8 +467,10 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        onOpenVoice={() => setIsVoiceModalOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenNaturalLog={() => setIsNaturalLogOpen(true)}
+        onOpenWallets={() => setIsWalletsModalOpen(true)}
         currency={currency}
         onChangeCurrency={setCurrency}
         onResetSampleData={handleResetSampleData}
@@ -237,14 +479,25 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* 1. Overview Dashboard */}
         {activeTab === 'overview' && (
           <DashboardOverview
             expenses={expenses}
             budgets={budgets}
+            subscriptions={subscriptions}
+            wallets={wallets}
             currency={currency}
+            onOpenVoice={() => setIsVoiceModalOpen(true)}
             onOpenScanner={() => setIsScannerOpen(true)}
             onOpenNaturalLog={() => setIsNaturalLogOpen(true)}
+            onOpenManualAdd={() => {
+              setExpenseToEdit(null);
+              setQuickAddDate(undefined);
+              setIsExpenseFormOpen(true);
+            }}
+            onOpenWallets={() => setIsWalletsModalOpen(true)}
+            onOpenTransfer={() => setIsTransferModalOpen(true)}
             onSelectExpense={(exp) => setSelectedExpenseForReceipt(exp)}
             onNavigateTab={setActiveTab}
             insights={insights}
@@ -252,13 +505,16 @@ export default function App() {
           />
         )}
 
+        {/* 2. Transactions & Ledger */}
         {activeTab === 'expenses' && (
           <ExpensesList
             expenses={expenses}
+            wallets={wallets}
             currency={currency}
             onOpenScanner={() => setIsScannerOpen(true)}
             onOpenManualAdd={() => {
               setExpenseToEdit(null);
+              setQuickAddDate(undefined);
               setIsExpenseFormOpen(true);
             }}
             onSelectExpense={(exp) => setSelectedExpenseForReceipt(exp)}
@@ -268,24 +524,63 @@ export default function App() {
             }}
             onDeleteExpense={handleDeleteExpense}
             onDuplicateExpense={handleDuplicateExpense}
+            onImportExpenses={handleImportExpenses}
             theme={theme}
           />
         )}
 
+        {/* 3. Subscriptions & Recurring Hub */}
+        {activeTab === 'subscriptions' && (
+          <SubscriptionsManager
+            subscriptions={subscriptions}
+            wallets={wallets}
+            currency={currency}
+            theme={theme}
+            onAddSubscription={handleAddSubscription}
+            onUpdateSubscription={handleUpdateSubscription}
+            onDeleteSubscription={handleDeleteSubscription}
+            onLogRenewalExpense={handleLogRenewalExpense}
+          />
+        )}
+
+        {/* 4. Payment & Cash Flow Calendar */}
+        {activeTab === 'calendar' && (
+          <PaymentCalendar
+            expenses={expenses}
+            subscriptions={subscriptions}
+            currency={currency}
+            theme={theme}
+            onSelectExpense={(exp) => setSelectedExpenseForReceipt(exp)}
+            onQuickAddExpenseForDate={(date) => {
+              setExpenseToEdit(null);
+              setQuickAddDate(date);
+              setIsExpenseFormOpen(true);
+            }}
+          />
+        )}
+
+        {/* 5. Budgets, 50/30/20 Rule & Targets */}
         {activeTab === 'budgets' && (
           <BudgetsManager
             budgets={budgets}
             expenses={expenses}
+            subscriptions={subscriptions}
+            wallets={wallets}
+            financialGoals={financialGoals}
             currency={currency}
             onUpdateBudgets={setBudgets}
+            onUpdateFinancialGoals={setFinancialGoals}
+            onAddGoal={handleAddGoal}
             onAddManualExpense={() => {
               setExpenseToEdit(null);
+              setQuickAddDate(undefined);
               setIsExpenseFormOpen(true);
             }}
             theme={theme}
           />
         )}
 
+        {/* 6. Qalta AI Financial Advisor */}
         {activeTab === 'advisor' && (
           <AiAdvisor
             expenses={expenses}
@@ -302,8 +597,32 @@ export default function App() {
         )}
       </main>
 
+      {/* Qalta Floating iOS Action Dock */}
+      <QaltaFloatingDock
+        onOpenVoice={() => setIsVoiceModalOpen(true)}
+        onOpenScanner={() => setIsScannerOpen(true)}
+        onOpenNaturalLog={() => setIsNaturalLogOpen(true)}
+        onOpenManualAdd={() => {
+          setExpenseToEdit(null);
+          setQuickAddDate(undefined);
+          setIsExpenseFormOpen(true);
+        }}
+        onOpenWallets={() => setIsWalletsModalOpen(true)}
+        theme={theme}
+      />
+
       {/* MODALS */}
-      {/* 1. Receipt Scanner with live camera and OCR HUD */}
+      {/* 1. Qalta AI Voice Modal */}
+      <QaltaVoiceModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        onSaveExpense={handleSaveNewExpense}
+        preferredCurrency={currency}
+        wallets={wallets}
+        theme={theme}
+      />
+
+      {/* 2. OCR Camera Receipt Scanner */}
       <ReceiptScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
@@ -312,7 +631,7 @@ export default function App() {
         theme={theme}
       />
 
-      {/* 2. Natural Language AI logger */}
+      {/* 3. Natural Language AI logger */}
       <NaturalLoggerModal
         isOpen={isNaturalLogOpen}
         onClose={() => setIsNaturalLogOpen(false)}
@@ -321,20 +640,23 @@ export default function App() {
         theme={theme}
       />
 
-      {/* 3. Manual Add & Edit Expense Form */}
+      {/* 4. Manual Add & Edit Multi-Type Transaction Form */}
       <ExpenseFormModal
         isOpen={isExpenseFormOpen}
         onClose={() => {
           setIsExpenseFormOpen(false);
           setExpenseToEdit(null);
+          setQuickAddDate(undefined);
         }}
         onSave={handleUpdateExpense}
         expenseToEdit={expenseToEdit}
         preferredCurrency={currency}
+        wallets={wallets}
+        initialDate={quickAddDate}
         theme={theme}
       />
 
-      {/* 4. Receipt High-Res Inspector & Zoom Modal */}
+      {/* 5. Receipt High-Res Inspector */}
       <ReceiptDetailModal
         isOpen={Boolean(selectedExpenseForReceipt)}
         expense={selectedExpenseForReceipt}
@@ -349,6 +671,29 @@ export default function App() {
           setSelectedExpenseForReceipt(null);
         }}
         theme={theme}
+      />
+
+      {/* 6. Multi-Wallet Manager Modal */}
+      <WalletsManagerModal
+        isOpen={isWalletsModalOpen}
+        onClose={() => setIsWalletsModalOpen(false)}
+        wallets={wallets}
+        currency={currency}
+        theme={theme}
+        onAddWallet={handleAddWallet}
+        onUpdateWallet={handleUpdateWallet}
+        onDeleteWallet={handleDeleteWallet}
+        onOpenTransfer={() => setIsTransferModalOpen(true)}
+      />
+
+      {/* 7. Account-to-Account Transfer Modal */}
+      <TransferModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        wallets={wallets}
+        currency={currency}
+        theme={theme}
+        onExecuteTransfer={handleExecuteTransfer}
       />
     </div>
   );
