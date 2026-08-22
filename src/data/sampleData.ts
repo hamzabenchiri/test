@@ -85,7 +85,7 @@ export const INITIAL_WALLETS: WalletAccount[] = [
     type: 'savings',
     balance: 18450.0,
     currency: 'USD',
-    color: '#10b981',
+    color: '#D2AF26',
     icon: 'PiggyBank',
     accountNumberMask: '•••• 8821',
   },
@@ -419,7 +419,7 @@ export const INITIAL_FINANCIAL_GOALS: FinancialGoal[] = [
 
 export const INITIAL_BUDGETS: CategoryBudget[] = [
   { category: 'Food & Dining', limit: 650, period: 'monthly', color: '#f97316', icon: 'Utensils' },
-  { category: 'Groceries', limit: 550, period: 'monthly', color: '#10b981', icon: 'ShoppingBag' },
+  { category: 'Groceries', limit: 550, period: 'monthly', color: '#D2AF26', icon: 'ShoppingBag' },
   { category: 'Shopping', limit: 400, period: 'monthly', color: '#ec4899', icon: 'ShoppingBag' },
   { category: 'Transportation', limit: 250, period: 'monthly', color: '#3b82f6', icon: 'Car' },
   { category: 'Housing & Utilities', limit: 1650, period: 'monthly', color: '#6366f1', icon: 'Home' },

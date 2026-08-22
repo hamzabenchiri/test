@@ -103,6 +103,27 @@ export default function App() {
     return localStorage.getItem('qalta_currency_v1') || 'USD';
   });
 
+  // Voice AI hero banner visibility (remembered across sessions)
+  const [showVoiceBanner, setShowVoiceBanner] = useState<boolean>(() => {
+    const stored = localStorage.getItem('spense_show_voice_banner_v1');
+    return stored !== 'false';
+  });
+
+  const handleDismissVoiceBanner = () => {
+    setShowVoiceBanner(false);
+    localStorage.setItem('spense_show_voice_banner_v1', 'false');
+    showToast('Voice AI banner removed from overview (Can be restored in Settings)');
+  };
+
+  const handleToggleVoiceBanner = () => {
+    setShowVoiceBanner((prev) => {
+      const nextVal = !prev;
+      localStorage.setItem('spense_show_voice_banner_v1', nextVal ? 'true' : 'false');
+      showToast(nextVal ? 'Voice AI banner enabled' : 'Voice AI banner hidden');
+      return nextVal;
+    });
+  };
+
   // Navigation tab
   const [activeTab, setActiveTab] = useState<NavTabType>('overview');
 
@@ -451,14 +472,14 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen theme-bg-app theme-text-main flex flex-col font-sans pb-20 selection:bg-emerald-500/20 selection:text-emerald-500 ${
+      className={`min-h-screen theme-bg-app theme-text-main flex flex-col font-sans pb-20 selection:bg-[#D2AF26]/20 selection:text-[#a38514] dark:selection:text-[#D2AF26] ${
         theme === 'dark' ? 'dark' : ''
       }`}
     >
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed top-20 right-5 z-50 px-4 py-2.5 rounded-2xl theme-bg-card theme-text-main font-semibold text-xs shadow-2xl theme-border border animate-fade-in flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-[#D2AF26] animate-pulse" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -476,6 +497,8 @@ export default function App() {
         onResetSampleData={handleResetSampleData}
         theme={theme}
         onToggleTheme={toggleTheme}
+        showVoiceBanner={showVoiceBanner}
+        onToggleVoiceBanner={handleToggleVoiceBanner}
       />
 
       {/* Main Content Area */}
@@ -502,6 +525,8 @@ export default function App() {
             onNavigateTab={setActiveTab}
             insights={insights}
             theme={theme}
+            showVoiceBanner={showVoiceBanner}
+            onDismissVoiceBanner={handleDismissVoiceBanner}
           />
         )}
 

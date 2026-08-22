@@ -182,7 +182,7 @@ export const ExpensesList: React.FC<Props> = ({
     });
   }, [filteredExpenses, sortBy]);
 
-  // Group by Date for Fineyo & Kelo ledger view
+  // Group by Date for ledger view
   const groupedByDate = useMemo(() => {
     const groups: { date: string; items: Expense[]; totalSpent: number; totalIncome: number }[] = [];
     const dateMap = new Map<string, Expense[]>();
@@ -281,12 +281,12 @@ export const ExpensesList: React.FC<Props> = ({
       {/* Top Header & Fast Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-emerald-500" />
+          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5 font-brand-serif">
+            <FileText className="w-6 h-6 text-[#D2AF26]" />
             Transactions & Ledger
           </h1>
           <p className="text-xs theme-text-secondary mt-1">
-            Fineyo & Kelo unified multi-account transactions, timeline stream, and CSV tools
+            Unified multi-account transactions, timeline stream, and CSV tools
           </p>
         </div>
 
@@ -316,14 +316,14 @@ export const ExpensesList: React.FC<Props> = ({
             onClick={onOpenScanner}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl theme-bg-card hover:theme-bg-subtle theme-border border theme-text-main text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <Camera className="w-3.5 h-3.5 text-emerald-500" />
+            <Camera className="w-3.5 h-3.5 text-[#D2AF26]" />
             <span>Scan</span>
           </button>
 
           {/* Add Manual */}
           <button
             onClick={onOpenManualAdd}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold shadow-lg shadow-[#D2AF26]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             id="expenses-add-transaction-btn"
           >
             <Plus className="w-4 h-4" />
@@ -347,7 +347,7 @@ export const ExpensesList: React.FC<Props> = ({
           <span className="text-[10px] uppercase tracking-wider theme-text-muted font-medium">
             Filtered Inflow
           </span>
-          <div className="text-lg font-bold font-mono text-emerald-500 mt-1">
+          <div className="text-lg font-bold font-mono text-[#a38514] dark:text-[#D2AF26] mt-1">
             +{formatCurrency(totalIncomeSum, currency)}
           </div>
         </div>
@@ -358,7 +358,7 @@ export const ExpensesList: React.FC<Props> = ({
           </span>
           <div
             className={`text-lg font-bold font-mono mt-1 ${
-              totalIncomeSum - totalExpenseSum >= 0 ? 'text-emerald-500' : 'text-rose-500'
+              totalIncomeSum - totalExpenseSum >= 0 ? 'text-[#a38514] dark:text-[#D2AF26]' : 'text-rose-500'
             }`}
           >
             {totalIncomeSum - totalExpenseSum >= 0 ? '+' : ''}
@@ -411,7 +411,7 @@ export const ExpensesList: React.FC<Props> = ({
               placeholder="Search by merchant, note, item, tag..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-xs"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main placeholder-stone-400 focus:outline-none focus:border-[#D2AF26] shadow-xs"
             />
           </div>
 
@@ -424,7 +424,7 @@ export const ExpensesList: React.FC<Props> = ({
                   ? 'theme-bg-card theme-text-main shadow-xs'
                   : 'theme-text-muted hover:theme-text-main'
               }`}
-              title="Daily Grouped Ledger (Fineyo Style)"
+              title="Daily Grouped Ledger"
             >
               <LayoutList className="w-3.5 h-3.5" />
             </button>
@@ -444,11 +444,11 @@ export const ExpensesList: React.FC<Props> = ({
 
         {/* Row 2: Secondary Dropdown Filters */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 pt-1">
-          {/* Wallet Account Filter (Fineyo) */}
+          {/* Wallet Account Filter */}
           <select
             value={selectedWalletId}
             onChange={(e) => setSelectedWalletId(e.target.value)}
-            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
           >
             <option value="all">All Accounts</option>
             {wallets.map((w) => (
@@ -462,7 +462,7 @@ export const ExpensesList: React.FC<Props> = ({
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
           >
             <option value="all">All Categories</option>
             {ALL_CATEGORIES.map((c) => (
@@ -476,7 +476,7 @@ export const ExpensesList: React.FC<Props> = ({
           <select
             value={selectedPayment}
             onChange={(e) => setSelectedPayment(e.target.value)}
-            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
           >
             <option value="all">All Methods</option>
             {ALL_PAYMENT_METHODS.map((pm) => (
@@ -490,7 +490,7 @@ export const ExpensesList: React.FC<Props> = ({
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as any)}
-            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
           >
             <option value="all">All Time</option>
             <option value="this_month">This Month</option>
@@ -502,7 +502,7 @@ export const ExpensesList: React.FC<Props> = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+            className="theme-input text-xs rounded-xl px-2.5 py-1.5 border theme-border focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
           >
             <option value="date_desc">Newest First</option>
             <option value="date_asc">Oldest First</option>
@@ -517,7 +517,7 @@ export const ExpensesList: React.FC<Props> = ({
                 type="checkbox"
                 checked={onlyReceipts}
                 onChange={(e) => setOnlyReceipts(e.target.checked)}
-                className="w-3.5 h-3.5 accent-emerald-500"
+                className="w-3.5 h-3.5 accent-[#D2AF26]"
               />
               <span>Receipts</span>
             </label>
@@ -526,7 +526,7 @@ export const ExpensesList: React.FC<Props> = ({
                 type="checkbox"
                 checked={onlySubscriptions}
                 onChange={(e) => setOnlySubscriptions(e.target.checked)}
-                className="w-3.5 h-3.5 accent-emerald-500"
+                className="w-3.5 h-3.5 accent-[#D2AF26]"
               />
               <span>Recurring</span>
             </label>
@@ -544,7 +544,7 @@ export const ExpensesList: React.FC<Props> = ({
           </p>
         </div>
       ) : viewMode === 'grouped' ? (
-        /* Fineyo & Kelo Day-by-Day Grouped Ledger */
+        /* Day-by-Day Grouped Ledger */
         <div className="space-y-5">
           {groupedByDate.map((group) => (
             <div key={group.date} className="space-y-2">
@@ -563,7 +563,7 @@ export const ExpensesList: React.FC<Props> = ({
                     </span>
                   )}
                   {group.totalIncome > 0 && (
-                    <span className="text-emerald-500">
+                    <span className="text-[#a38514] dark:text-[#D2AF26]">
                       +{formatCurrency(group.totalIncome, currency)}
                     </span>
                   )}
@@ -588,11 +588,11 @@ export const ExpensesList: React.FC<Props> = ({
                       {/* Left: Icon & Details */}
                       <div className="flex items-center gap-3 min-w-0">
                         {isIncome ? (
-                          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-[#D2AF26]/10 border border-[#D2AF26]/20 text-[#a38514] dark:text-[#D2AF26] flex items-center justify-center shrink-0">
                             <ArrowDownLeft className="w-4 h-4" />
                           </div>
                         ) : isTransfer ? (
-                          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-stone-500/10 border border-stone-500/20 text-stone-600 dark:text-stone-300 flex items-center justify-center shrink-0">
                             <ArrowRightLeft className="w-4 h-4" />
                           </div>
                         ) : (
@@ -605,12 +605,12 @@ export const ExpensesList: React.FC<Props> = ({
                               {exp.merchant}
                             </span>
                             {exp.receiptImage && (
-                              <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded">
+                              <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] border border-[#D2AF26]/20 rounded">
                                 OCR Receipt
                               </span>
                             )}
                             {exp.isSubscription && (
-                              <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded flex items-center gap-0.5">
+                              <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] border border-[#D2AF26]/20 rounded flex items-center gap-0.5">
                                 <Repeat className="w-2.5 h-2.5" />
                                 Recurring
                               </span>
@@ -643,9 +643,9 @@ export const ExpensesList: React.FC<Props> = ({
                           <div
                             className={`text-xs sm:text-sm font-mono font-bold ${
                               isIncome
-                                ? 'text-emerald-500'
+                                ? 'text-[#a38514] dark:text-[#D2AF26]'
                                 : isTransfer
-                                ? 'text-indigo-400'
+                                ? 'text-stone-500'
                                 : 'theme-text-main'
                             }`}
                           >
@@ -706,14 +706,14 @@ export const ExpensesList: React.FC<Props> = ({
               <div
                 key={exp.id}
                 onClick={() => onSelectExpense(exp)}
-                className="theme-card rounded-2xl p-4 shadow-xs theme-border border hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-between group"
+                className="theme-card rounded-2xl p-4 shadow-xs theme-border border hover:border-[#D2AF26]/50 transition-all cursor-pointer flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
                       <CategoryIcon category={exp.category} size="md" />
                       <div>
-                        <h4 className="text-xs font-bold theme-text-main group-hover:text-emerald-500 transition-colors">
+                        <h4 className="text-xs font-bold theme-text-main group-hover:text-[#a38514] dark:group-hover:text-[#D2AF26] transition-colors">
                           {exp.merchant}
                         </h4>
                         <span className="text-[10px] theme-text-muted">{formatDate(exp.date)}</span>
@@ -722,7 +722,7 @@ export const ExpensesList: React.FC<Props> = ({
 
                     <div
                       className={`text-sm font-mono font-bold ${
-                        isIncome ? 'text-emerald-500' : 'theme-text-main'
+                        isIncome ? 'text-[#a38514] dark:text-[#D2AF26]' : 'theme-text-main'
                       }`}
                     >
                       {isIncome ? '+' : '-'}

@@ -198,11 +198,11 @@ export const SubscriptionsManager: React.FC<Props> = ({
 
   return (
     <div className="space-y-6 animate-fade-in" id="subscriptions-manager-view">
-      {/* Header & Subo Style Projections */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5">
-            <Repeat className="w-6 h-6 text-emerald-500" />
+          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5 font-brand-serif">
+            <Repeat className="w-6 h-6 text-[#D2AF26]" />
             Subscriptions & Recurring Hub
           </h1>
           <p className="text-xs theme-text-secondary mt-1">
@@ -216,13 +216,13 @@ export const SubscriptionsManager: React.FC<Props> = ({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl theme-bg-card theme-border border hover:theme-bg-subtle theme-text-main text-xs font-semibold shadow-xs transition-colors cursor-pointer"
             id="browse-sub-templates-btn"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <Sparkles className="w-3.5 h-3.5 text-[#D2AF26]" />
             <span>Popular Services</span>
           </button>
 
           <button
             onClick={openNewSubModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold shadow-lg shadow-[#D2AF26]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             id="add-new-subscription-btn"
           >
             <Plus className="w-4 h-4" />
@@ -237,7 +237,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
         <div className="theme-card p-5 rounded-2xl relative overflow-hidden shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium theme-text-secondary">Monthly Recurring</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -253,7 +253,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
         <div className="theme-card p-5 rounded-2xl relative overflow-hidden shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium theme-text-secondary">Annualized Cost</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-stone-500/10 text-stone-600 dark:text-stone-300 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -269,14 +269,14 @@ export const SubscriptionsManager: React.FC<Props> = ({
         <div className="theme-card p-5 rounded-2xl relative overflow-hidden shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium theme-text-secondary">Free Trials Active</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#D2AF26]/15 text-[#a38514] dark:text-[#D2AF26] flex items-center justify-center">
               <ShieldAlert className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-bold theme-text-main font-mono mt-3">
             {trialSubs.length}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 mt-2 font-medium">
+          <div className="flex items-center gap-1.5 text-[11px] text-[#a38514] dark:text-[#D2AF26] mt-2 font-medium">
             {trialSubs.length > 0 ? (
               <span>⚠️ Review before automatic rollover</span>
             ) : (
@@ -289,7 +289,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
         <div className="theme-card p-5 rounded-2xl relative overflow-hidden shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium theme-text-secondary">Avg Plan Cost</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-stone-500/10 text-stone-600 dark:text-stone-300 flex items-center justify-center">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
@@ -333,7 +333,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
             placeholder="Search subscriptions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl theme-bg-card theme-border border theme-text-main placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-xs"
+            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl theme-bg-card theme-border border theme-text-main placeholder-stone-400 focus:outline-none focus:border-[#D2AF26] shadow-xs"
           />
         </div>
       </div>
@@ -348,7 +348,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
           </p>
           <button
             onClick={openNewSubModal}
-            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 cursor-pointer"
+            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#D2AF26] text-stone-950 font-bold text-xs rounded-xl shadow-lg shadow-[#D2AF26]/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Add First Subscription
@@ -368,7 +368,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
               <div
                 key={sub.id}
                 className={`theme-card rounded-2xl p-5 relative overflow-hidden transition-all hover:shadow-md flex flex-col justify-between group ${
-                  isTrial ? 'border-amber-500/40' : isUrgent ? 'border-emerald-500/40' : ''
+                  isTrial ? 'border-[#D2AF26]/60' : isUrgent ? 'border-[#D2AF26]/60' : ''
                 }`}
                 id={`subscription-card-${sub.id}`}
               >
@@ -377,8 +377,8 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0"
-                        style={{ backgroundColor: sub.color || '#10b981' }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-stone-950 font-bold text-sm shadow-xs shrink-0"
+                        style={{ backgroundColor: sub.color || '#D2AF26' }}
                       >
                         {sub.name.charAt(0)}
                       </div>
@@ -409,8 +409,8 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   {/* Free Trial or Renewal Countdown Badge */}
                   <div className="mt-4">
                     {isTrial ? (
-                      <div className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                      <div className="px-3 py-2 rounded-xl bg-[#D2AF26]/10 border border-[#D2AF26]/30 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs text-[#a38514] dark:text-[#D2AF26] font-semibold">
                           <ShieldAlert className="w-3.5 h-3.5" />
                           <span>
                             {daysLeft === 0
@@ -420,7 +420,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                               : `Trial ends in ${daysLeft} days`}
                           </span>
                         </div>
-                        <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-mono">
+                        <span className="text-[10px] text-[#a38514] dark:text-[#D2AF26] font-mono">
                           {formatShortDate(sub.freeTrialEndDate || '')}
                         </span>
                       </div>
@@ -428,7 +428,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                       <div
                         className={`px-3 py-2 rounded-xl flex items-center justify-between text-xs ${
                           isUrgent
-                            ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-semibold'
+                            ? 'bg-[#D2AF26]/10 border border-[#D2AF26]/30 text-[#a38514] dark:text-[#D2AF26] font-semibold'
                             : 'theme-bg-subtle theme-border border theme-text-secondary'
                         }`}
                       >
@@ -484,7 +484,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                       {sub.status === 'active' ? (
                         <PauseCircle className="w-4 h-4" />
                       ) : (
-                        <PlayCircle className="w-4 h-4 text-emerald-500" />
+                        <PlayCircle className="w-4 h-4 text-[#D2AF26]" />
                       )}
                     </button>
 
@@ -511,7 +511,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   {onLogRenewalExpense && sub.status === 'active' && (
                     <button
                       onClick={() => onLogRenewalExpense(sub)}
-                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#a38514] dark:text-[#D2AF26] bg-[#D2AF26]/10 hover:bg-[#D2AF26]/20 border border-[#D2AF26]/30 rounded-lg transition-colors cursor-pointer"
                       title="Record this payment in transactions ledger"
                     >
                       <CheckCircle2 className="w-3 h-3" />
@@ -531,8 +531,8 @@ export const SubscriptionsManager: React.FC<Props> = ({
           <div className="theme-bg-card theme-border border rounded-2xl shadow-2xl theme-text-main w-full max-w-xl overflow-hidden my-8 animate-scale-up">
             <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                <h2 className="text-base font-bold theme-text-main">Popular Service Templates</h2>
+                <Sparkles className="w-5 h-5 text-[#D2AF26]" />
+                <h2 className="text-base font-bold theme-text-main font-brand-serif">Popular Service Templates</h2>
               </div>
               <button
                 onClick={() => setIsTemplatesOpen(false)}
@@ -552,7 +552,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <button
                     key={tpl.name}
                     onClick={() => handleApplyTemplate(tpl)}
-                    className="flex items-center justify-between p-3 rounded-xl theme-bg-subtle hover:theme-bg-card theme-border border hover:border-emerald-500/40 text-left transition-all group cursor-pointer"
+                    className="flex items-center justify-between p-3 rounded-xl theme-bg-subtle hover:theme-bg-card theme-border border hover:border-[#D2AF26]/50 text-left transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -562,7 +562,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                         {tpl.name.charAt(0)}
                       </div>
                       <div>
-                        <div className="text-xs font-semibold theme-text-main group-hover:text-emerald-500 transition-colors">
+                        <div className="text-xs font-semibold theme-text-main group-hover:text-[#a38514] dark:group-hover:text-[#D2AF26] transition-colors">
                           {tpl.name}
                         </div>
                         <div className="text-[10px] theme-text-muted">{tpl.category}</div>
@@ -588,8 +588,8 @@ export const SubscriptionsManager: React.FC<Props> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
           <div className="theme-bg-card theme-border border rounded-2xl shadow-2xl theme-text-main w-full max-w-lg overflow-hidden my-8 animate-scale-up">
             <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
-              <h2 className="text-base font-bold theme-text-main flex items-center gap-2">
-                <Repeat className="w-5 h-5 text-emerald-500" />
+              <h2 className="text-base font-bold theme-text-main flex items-center gap-2 font-brand-serif">
+                <Repeat className="w-5 h-5 text-[#D2AF26]" />
                 {editingSub ? 'Edit Subscription' : 'New Subscription & Recurring Bill'}
               </h2>
               <button
@@ -611,7 +611,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                     placeholder="e.g. Netflix, Spotify, Gym"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] shadow-xs"
                   />
                 </div>
 
@@ -625,7 +625,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-semibold focus:outline-none focus:border-emerald-500 shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-semibold focus:outline-none focus:border-[#D2AF26] shadow-xs"
                   />
                 </div>
               </div>
@@ -637,7 +637,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <select
                     value={billingCycle}
                     onChange={(e) => setBillingCycle(e.target.value as BillingCycle)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   >
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
@@ -651,7 +651,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   >
                     {ALL_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -671,7 +671,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                     required
                     value={nextBillingDate}
                     onChange={(e) => setNextBillingDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   />
                 </div>
 
@@ -680,7 +680,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <select
                     value={reminderDaysBefore}
                     onChange={(e) => setReminderDaysBefore(parseInt(e.target.value, 10))}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   >
                     <option value={1}>1 day before</option>
                     <option value={2}>2 days before</option>
@@ -695,7 +695,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-xs font-semibold theme-text-main flex items-center gap-1.5">
-                      <ShieldAlert className="w-4 h-4 text-amber-500" />
+                      <ShieldAlert className="w-4 h-4 text-[#D2AF26]" />
                       Free Trial Tracker
                     </span>
                     <p className="text-[10px] theme-text-secondary">
@@ -706,13 +706,13 @@ export const SubscriptionsManager: React.FC<Props> = ({
                     type="checkbox"
                     checked={isFreeTrial}
                     onChange={(e) => setIsFreeTrial(e.target.checked)}
-                    className="w-4 h-4 accent-emerald-500 cursor-pointer"
+                    className="w-4 h-4 accent-[#D2AF26] cursor-pointer"
                   />
                 </div>
 
                 {isFreeTrial && (
                   <div className="space-y-1 pt-1">
-                    <label className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                    <label className="text-[11px] font-medium text-[#a38514] dark:text-[#D2AF26]">
                       Free Trial Expiration Date
                     </label>
                     <input
@@ -720,7 +720,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                       required={isFreeTrial}
                       value={freeTrialEndDate}
                       onChange={(e) => setFreeTrialEndDate(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs rounded-xl theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-amber-500 cursor-pointer shadow-xs"
+                      className="w-full px-3 py-1.5 text-xs rounded-xl theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                     />
                   </div>
                 )}
@@ -733,7 +733,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <select
                     value={walletAccountId}
                     onChange={(e) => setWalletAccountId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   >
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
@@ -748,7 +748,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                    className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                   >
                     {ALL_PAYMENT_METHODS.map((pm) => (
                       <option key={pm} value={pm}>
@@ -767,7 +767,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                   placeholder="e.g. Shared with roommates, cancel if unused"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 shadow-xs"
+                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] shadow-xs"
                 />
               </div>
 
@@ -782,7 +782,7 @@ export const SubscriptionsManager: React.FC<Props> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer transition-all"
+                  className="px-5 py-2 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 font-bold text-xs shadow-lg shadow-[#D2AF26]/20 cursor-pointer transition-all"
                 >
                   {editingSub ? 'Save Changes' : 'Create Subscription'}
                 </button>

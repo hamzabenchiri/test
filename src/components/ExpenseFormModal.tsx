@@ -193,11 +193,11 @@ export const ExpenseFormModal: React.FC<Props> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
           <div>
-            <h2 className="text-base font-bold theme-text-main">
+            <h2 className="text-base font-bold theme-text-main font-brand-serif">
               {expenseToEdit ? 'Edit Transaction' : 'Record Transaction'}
             </h2>
             <p className="text-xs theme-text-secondary">
-              Fineyo & Kelo unified multi-type ledger entry
+              Unified multi-type transaction ledger entry
             </p>
           </div>
           <button
@@ -213,8 +213,8 @@ export const ExpenseFormModal: React.FC<Props> = ({
           <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl theme-bg-subtle theme-border border">
             {[
               { id: 'expense', label: 'Expense', icon: ArrowUpRight, color: 'text-rose-500' },
-              { id: 'income', label: 'Income', icon: ArrowDownLeft, color: 'text-emerald-500' },
-              { id: 'transfer', label: 'Transfer', icon: ArrowRightLeft, color: 'text-indigo-400' },
+              { id: 'income', label: 'Income', icon: ArrowDownLeft, color: 'text-[#a38514] dark:text-[#D2AF26]' },
+              { id: 'transfer', label: 'Transfer', icon: ArrowRightLeft, color: 'text-stone-400' },
             ].map((tab) => {
               const Icon = tab.icon;
               const isSelected = type === tab.id;
@@ -268,7 +268,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 }
                 value={merchant}
                 onChange={(e) => setMerchant(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main placeholder-stone-400 focus:outline-none focus:border-[#D2AF26] shadow-xs"
               />
             </div>
 
@@ -286,7 +286,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                  className="w-full pl-12 pr-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-emerald-500 shadow-xs"
+                  className="w-full pl-12 pr-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-[#D2AF26] shadow-xs"
                 />
               </div>
             </div>
@@ -300,7 +300,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                 >
                   {ALL_CATEGORIES.filter((c) => c !== 'Salary & Income').map((c) => (
                     <option key={c} value={c}>
@@ -315,7 +315,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 <select
                   value={walletAccountId}
                   onChange={(e) => setWalletAccountId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                 >
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
@@ -332,7 +332,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 <select
                   value={destinationWalletId}
                   onChange={(e) => setDestinationWalletId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                 >
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id} disabled={w.id === walletAccountId}>
@@ -347,7 +347,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                  className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
                 >
                   {ALL_PAYMENT_METHODS.map((pm) => (
                     <option key={pm} value={pm}>
@@ -368,7 +368,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
               />
             </div>
 
@@ -378,7 +378,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
               />
             </div>
           </div>
@@ -392,21 +392,21 @@ export const ExpenseFormModal: React.FC<Props> = ({
                 placeholder="e.g. coffee, work, vacation"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] shadow-xs"
               />
             </div>
 
             {type === 'expense' && (
               <div className="flex items-center justify-between p-3 rounded-xl theme-bg-subtle theme-border border mt-4">
                 <div className="flex items-center gap-2">
-                  <Repeat className="w-4 h-4 text-emerald-500" />
+                  <Repeat className="w-4 h-4 text-[#D2AF26]" />
                   <span className="text-xs font-medium theme-text-main">Is Recurring Bill</span>
                 </div>
                 <input
                   type="checkbox"
                   checked={isSubscription}
                   onChange={(e) => setIsSubscription(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-500 cursor-pointer"
+                  className="w-4 h-4 accent-[#D2AF26] cursor-pointer"
                 />
               </div>
             )}
@@ -420,7 +420,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
               placeholder="e.g. Split with Sarah, business expense"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-emerald-500 shadow-xs"
+              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] shadow-xs"
             />
           </div>
 
@@ -435,7 +435,7 @@ export const ExpenseFormModal: React.FC<Props> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 font-bold text-xs shadow-lg shadow-[#D2AF26]/20 cursor-pointer transition-all"
             >
               <Check className="w-4 h-4" />
               <span>{expenseToEdit ? 'Save Changes' : 'Save Transaction'}</span>

@@ -49,7 +49,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
   const [name, setName] = useState('');
   const [type, setType] = useState<WalletType>('checking');
   const [balance, setBalance] = useState<number | ''>('');
-  const [color, setColor] = useState('#3b82f6');
+  const [color, setColor] = useState('#D2AF26');
   const [accountNumberMask, setAccountNumberMask] = useState('');
 
   if (!isOpen) return null;
@@ -70,7 +70,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
     setName('');
     setType('checking');
     setBalance('');
-    setColor('#3b82f6');
+    setColor('#D2AF26');
     setAccountNumberMask('');
     setIsFormOpen(true);
   };
@@ -80,7 +80,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
     setName(wallet.name);
     setType(wallet.type);
     setBalance(wallet.balance);
-    setColor(wallet.color || '#3b82f6');
+    setColor(wallet.color || '#D2AF26');
     setAccountNumberMask(wallet.accountNumberMask || '');
     setIsFormOpen(true);
   };
@@ -146,11 +146,11 @@ export const WalletsManagerModal: React.FC<Props> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+            <div className="w-8 h-8 rounded-lg bg-[#D2AF26]/10 border border-[#D2AF26]/20 flex items-center justify-center text-[#a38514] dark:text-[#D2AF26]">
               <Wallet className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold theme-text-main">Accounts & Wallets (Fineyo)</h2>
+              <h2 className="text-base font-bold theme-text-main font-brand-serif">Accounts & Wallets</h2>
               <p className="text-xs theme-text-secondary">Manage bank accounts, cards, cash & net worth</p>
             </div>
           </div>
@@ -163,12 +163,12 @@ export const WalletsManagerModal: React.FC<Props> = ({
         </div>
 
         {/* Net Worth Summary Bar */}
-        <div className="px-6 py-4 bg-emerald-500/5 border-b theme-border grid grid-cols-3 gap-2 text-center">
+        <div className="px-6 py-4 bg-[#D2AF26]/5 border-b theme-border grid grid-cols-3 gap-2 text-center">
           <div>
             <span className="text-[10px] theme-text-muted uppercase tracking-wider block">
               Total Assets
             </span>
-            <span className="text-xs sm:text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs sm:text-sm font-bold font-mono text-[#a38514] dark:text-[#D2AF26]">
               {formatCurrency(totalAssets, currency)}
             </span>
           </div>
@@ -202,12 +202,12 @@ export const WalletsManagerModal: React.FC<Props> = ({
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl theme-bg-subtle hover:theme-bg-card theme-border border text-xs font-medium theme-text-main transition-colors cursor-pointer"
               >
-                <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400" />
+                <ArrowRightLeft className="w-3.5 h-3.5 text-[#D2AF26]" />
                 <span>Transfer Funds</span>
               </button>
               <button
                 onClick={openAddForm}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Account</span>
@@ -243,7 +243,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                     placeholder="e.g. Chase Checking"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26]"
                   />
                 </div>
 
@@ -252,7 +252,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as WalletType)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer"
                   >
                     <option value="checking">Checking / Bank</option>
                     <option value="savings">Savings / High-Yield</option>
@@ -274,7 +274,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                     placeholder="0.00"
                     value={balance}
                     onChange={(e) => setBalance(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-[#D2AF26]"
                   />
                 </div>
 
@@ -285,7 +285,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                     placeholder="e.g. •••• 4129"
                     value={accountNumberMask}
                     onChange={(e) => setAccountNumberMask(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg theme-bg-card theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26]"
                   />
                 </div>
               </div>
@@ -293,7 +293,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded-lg shadow-xs cursor-pointer transition-all"
+                  className="px-4 py-1.5 bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold rounded-lg shadow-xs cursor-pointer transition-all"
                 >
                   Save Account
                 </button>
@@ -314,8 +314,8 @@ export const WalletsManagerModal: React.FC<Props> = ({
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0"
-                      style={{ backgroundColor: w.color || '#3b82f6' }}
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-stone-950 font-bold shadow-xs shrink-0"
+                      style={{ backgroundColor: w.color || '#D2AF26' }}
                     >
                       <IconComponent className="w-4 h-4" />
                     </div>
@@ -323,7 +323,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold theme-text-main">{w.name}</span>
                         {w.isDefault && (
-                          <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-emerald-500/10 text-emerald-500 rounded">
+                          <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] rounded">
                             Default
                           </span>
                         )}
@@ -348,7 +348,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                     <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
                       <button
                         onClick={() => openEditForm(w)}
-                        className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-700/50 transition-colors cursor-pointer"
+                        className="p-1 theme-text-muted hover:theme-text-main rounded hover:theme-bg-subtle transition-colors cursor-pointer"
                         title="Edit Account"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -356,7 +356,7 @@ export const WalletsManagerModal: React.FC<Props> = ({
                       {wallets.length > 1 && (
                         <button
                           onClick={() => onDeleteWallet(w.id)}
-                          className="p-1 text-rose-400/60 hover:text-rose-400 rounded hover:bg-slate-700/50 transition-colors cursor-pointer"
+                          className="p-1 text-rose-400/60 hover:text-rose-400 rounded hover:theme-bg-subtle transition-colors cursor-pointer"
                           title="Delete Account"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

@@ -1,55 +1,66 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #f4f5f8;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f8f9fb;
-  --bg-card-muted: #eff1f5;
-  --bg-card-hover: #e9ecf2;
-  --border-card: rgba(0, 0, 0, 0.07);
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --text-main: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --nav-bg: rgba(244, 245, 248, 0.85);
-  --modal-bg: #ffffff;
-  --modal-header-bg: #f8f9fa;
-  --input-bg: #f8f9fb;
-  --input-border: #e2e8f0;
-  --badge-bg: #f1f5f9;
-  --accent-emerald-bg: rgba(16, 185, 129, 0.1);
-  --accent-emerald-border: rgba(16, 185, 129, 0.25);
-  --accent-emerald-text: #059669;
+  --bg-app: #dbdbdb;
+  --bg-card: #ededed;
+  --bg-card-subtle: #e2e2e2;
+  --bg-card-muted: #d5d5d5;
+  --bg-card-hover: #e5e5e5;
+  --border-card: rgba(0, 0, 0, 0.12);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --text-main: #141416;
+  --text-secondary: #4a4a50;
+  --text-muted: #6e6e76;
+  --nav-bg: rgba(219, 219, 219, 0.94);
+  --modal-bg: #ededed;
+  --modal-header-bg: #e2e2e2;
+  --input-bg: #e2e2e2;
+  --input-border: rgba(0, 0, 0, 0.14);
+  --badge-bg: #d2d2d2;
+  --accent-gold: #D2AF26;
+  --accent-gold-hover: #be9d1c;
+  --accent-gold-bg: rgba(210, 175, 38, 0.14);
+  --accent-gold-border: rgba(210, 175, 38, 0.35);
+  --accent-gold-text: #8e7210;
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
 }
 
 .dark, [data-theme='dark'] {
-  --bg-app: #08080a;
-  --bg-card: #101116;
-  --bg-card-subtle: #16171e;
-  --bg-card-muted: #1c1d26;
-  --bg-card-hover: #222430;
-  --border-card: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --text-main: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --nav-bg: rgba(8, 8, 10, 0.85);
-  --modal-bg: #101116;
-  --modal-header-bg: #16171e;
-  --input-bg: #16171e;
+  --bg-app: #0c0c0e;
+  --bg-card: #141417;
+  --bg-card-subtle: #1a1a20;
+  --bg-card-muted: #22222a;
+  --bg-card-hover: #282834;
+  --border-card: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.035);
+  --text-main: #f7f7f8;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --nav-bg: rgba(12, 12, 14, 0.92);
+  --modal-bg: #141417;
+  --modal-header-bg: #1a1a20;
+  --input-bg: #1a1a20;
   --input-border: rgba(255, 255, 255, 0.1);
-  --badge-bg: #1c1d26;
-  --accent-emerald-bg: rgba(16, 185, 129, 0.14);
-  --accent-emerald-border: rgba(16, 185, 129, 0.3);
-  --accent-emerald-text: #34d399;
+  --badge-bg: #22222a;
+  --accent-gold: #D2AF26;
+  --accent-gold-hover: #e0bf35;
+  --accent-gold-bg: rgba(210, 175, 38, 0.15);
+  --accent-gold-border: rgba(210, 175, 38, 0.35);
+  --accent-gold-text: #D2AF26;
+  --shadow-card: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
 }
 
 body {
   background-color: var(--bg-app);
   color: var(--text-main);
-  transition: background-color 0.2s ease, color 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.011em;
+}
+
+/* Serif Brand Typography font */
+.font-brand-serif {
+  font-family: 'Cinzel', 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
 }
 
 /* Custom theme helper utility classes */
@@ -59,6 +70,7 @@ body {
 
 .theme-bg-card {
   background-color: var(--bg-card);
+  box-shadow: var(--shadow-card);
 }
 
 .theme-bg-subtle {
@@ -115,6 +127,34 @@ body {
   border-color: var(--border-card);
 }
 
+/* Custom Gold Accent Helpers */
+.bg-gold-accent {
+  background-color: #D2AF26;
+}
+
+.text-gold-accent {
+  color: #D2AF26;
+}
+
+.border-gold-accent {
+  border-color: #D2AF26;
+}
+
+.theme-gold-pill {
+  background-color: var(--accent-gold-bg);
+  border: 1px solid var(--accent-gold-border);
+  color: var(--accent-gold-text);
+}
+
+/* Custom editorial card style mirroring the Spense stationery card */
+.spense-stationery-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+
 /* Custom iOS style animations */
 @keyframes fadeIn {
   from {
@@ -132,10 +172,12 @@ body {
 }
 
 /* Hide scrollbar utility */
-.scrollbar-none::-webkit-scrollbar {
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.scrollbar-none {
+.scrollbar-none,
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

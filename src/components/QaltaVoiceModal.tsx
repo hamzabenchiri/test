@@ -31,10 +31,10 @@ interface Props {
 const VOICE_EXAMPLES = [
   'Spent $18.50 on lunch at Chipotle with Apple Pay',
   'Purchased OpenAI ChatGPT subscription for $20 a month',
-  'Paid $64.80 for groceries at Trader Joe’s on Debit Card',
+  'Paid $64.80 for groceries at Whole Foods on Debit Card',
   'Uber ride to the airport for $42.50 yesterday',
-  'Monthly gym membership fee of $49.99 from Chase Checking',
-  'Bought a new mouse for $59.99 on Amazon',
+  'Monthly gym membership fee of $49.99 from Primary Checking',
+  'Bought design books for $59.99 on Amazon',
 ];
 
 export const QaltaVoiceModal: React.FC<Props> = ({
@@ -279,15 +279,15 @@ export const QaltaVoiceModal: React.FC<Props> = ({
         {/* Header */}
         <div className="p-5 theme-modal-header border-b theme-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 p-[1.5px] flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <div className="w-full h-full bg-[#0d0d12] rounded-[13px] flex items-center justify-center">
-                <Mic className="w-4 h-4 text-emerald-400" />
+            <div className="w-8 h-8 rounded-2xl bg-[#D2AF26]/10 border border-[#D2AF26]/20 p-[1.5px] flex items-center justify-center shadow-md shadow-[#D2AF26]/10">
+              <div className="w-full h-full bg-[#121216] dark:bg-[#121216] rounded-[13px] flex items-center justify-center">
+                <Mic className="w-4 h-4 text-[#D2AF26]" />
               </div>
             </div>
             <div>
-              <h2 className="text-base font-black theme-text-main flex items-center gap-1.5">
-                <span>Spense AI Voice Tracker</span>
-                <span className="px-1.5 py-0.2 text-[9px] font-bold uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 rounded">
+              <h2 className="text-base font-black theme-text-main flex items-center gap-1.5 font-brand-serif">
+                <span>Spense Voice Tracker</span>
+                <span className="px-1.5 py-0.2 text-[9px] font-bold uppercase bg-[#D2AF26]/15 text-[#a38514] dark:text-[#D2AF26] rounded font-mono">
                   Live
                 </span>
               </h2>
@@ -313,8 +313,8 @@ export const QaltaVoiceModal: React.FC<Props> = ({
               {/* Outer Glowing Ripple Rings */}
               {isListening && (
                 <>
-                  <div className="absolute w-36 h-36 rounded-full bg-emerald-500/20 animate-ping" />
-                  <div className="absolute w-44 h-44 rounded-full bg-cyan-500/10 animate-pulse" />
+                  <div className="absolute w-36 h-36 rounded-full bg-[#D2AF26]/20 animate-ping" />
+                  <div className="absolute w-44 h-44 rounded-full bg-[#D2AF26]/10 animate-pulse" />
                 </>
               )}
 
@@ -324,10 +324,10 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                 disabled={isProcessing}
                 className={`relative w-24 h-24 rounded-full flex flex-col items-center justify-center transition-all duration-300 shadow-2xl cursor-pointer ${
                   isListening
-                    ? 'bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-500 shadow-rose-500/30 scale-105 ring-4 ring-rose-500/30'
+                    ? 'bg-rose-600 shadow-rose-500/30 scale-105 ring-4 ring-rose-500/30'
                     : isProcessing
-                    ? 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-indigo-500/30 animate-pulse'
-                    : 'bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 shadow-emerald-500/30 hover:scale-105 active:scale-95'
+                    ? 'bg-[#b8951a] shadow-[#D2AF26]/30 animate-pulse'
+                    : 'bg-[#D2AF26] hover:bg-[#c29f1e] shadow-[#D2AF26]/30 hover:scale-105 active:scale-95'
                 }`}
                 title={isListening ? 'Tap to finish speaking' : 'Tap to speak'}
                 id="qalta-voice-orb-btn"
@@ -339,13 +339,13 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                   </>
                 ) : isProcessing ? (
                   <>
-                    <Sparkles className="w-8 h-8 text-white animate-spin" />
-                    <span className="text-[10px] font-bold text-white mt-1">Thinking...</span>
+                    <Sparkles className="w-8 h-8 text-stone-950 animate-spin" />
+                    <span className="text-[10px] font-bold text-stone-950 mt-1">Thinking...</span>
                   </>
                 ) : (
                   <>
-                    <Mic className="w-8 h-8 text-slate-950 font-bold" />
-                    <span className="text-[10px] font-extrabold text-slate-950 mt-1">Tap to Speak</span>
+                    <Mic className="w-8 h-8 text-stone-950 font-bold" />
+                    <span className="text-[10px] font-extrabold text-stone-950 mt-1 font-mono">Speak</span>
                   </>
                 )}
               </button>
@@ -357,7 +357,7 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                 {[40, 75, 100, 50, 90, 60, 80, 45, 95, 30].map((h, i) => (
                   <span
                     key={i}
-                    className="w-1 bg-gradient-to-t from-emerald-500 to-cyan-400 rounded-full animate-pulse"
+                    className="w-1 bg-[#D2AF26] rounded-full animate-pulse"
                     style={{
                       height: `${h}%`,
                       animationDelay: `${i * 100}ms`,
@@ -380,8 +380,8 @@ export const QaltaVoiceModal: React.FC<Props> = ({
           {/* Transcript / Input Box */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold theme-text-secondary flex items-center gap-1">
-                <Volume2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="font-semibold theme-text-secondary flex items-center gap-1 font-brand-serif">
+                <Volume2 className="w-3.5 h-3.5 text-[#D2AF26]" />
                 Voice Transcript / Query
               </span>
               {transcript && (
@@ -400,14 +400,14 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                 onChange={(e) => setTranscript(e.target.value)}
                 placeholder='e.g., "Spent $16.50 on iced matcha latte at Blue Bottle using Apple Pay"'
                 rows={2}
-                className="w-full theme-input border rounded-2xl p-3.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 shadow-inner resize-none font-sans"
+                className="w-full theme-input border rounded-2xl p-3.5 text-xs sm:text-sm focus:outline-none focus:border-[#D2AF26] shadow-inner resize-none font-sans"
                 id="qalta-voice-transcript-input"
               />
 
               {transcript.trim() && !isProcessing && !extractedData && (
                 <button
                   onClick={() => processWithAI(transcript)}
-                  className="absolute right-2.5 bottom-2.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
+                  className="absolute right-2.5 bottom-2.5 px-3 py-1.5 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
                 >
                   <span>Process AI</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -426,15 +426,15 @@ export const QaltaVoiceModal: React.FC<Props> = ({
 
           {/* AI Extracted Result Review Card */}
           {extractedData && (
-            <div className="p-4.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/30 space-y-3.5 animate-fade-in">
+            <div className="p-4.5 rounded-2xl bg-[#D2AF26]/5 border border-[#D2AF26]/30 space-y-3.5 animate-fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold">
+                  <div className="w-6 h-6 rounded-lg bg-[#D2AF26]/20 text-[#a38514] dark:text-[#D2AF26] flex items-center justify-center font-bold">
                     <Check className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs font-bold theme-text-main">AI Extraction Verified</span>
+                  <span className="text-xs font-bold theme-text-main font-brand-serif">AI Extraction Verified</span>
                 </div>
-                <span className="text-base font-bold font-mono text-emerald-500">
+                <span className="text-base font-bold font-mono text-[#a38514] dark:text-[#D2AF26]">
                   {formatCurrency(extractedData.amount, extractedData.currency)}
                 </span>
               </div>
@@ -442,14 +442,14 @@ export const QaltaVoiceModal: React.FC<Props> = ({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="p-2.5 rounded-xl theme-bg-card theme-border border">
                   <span className="text-[10px] theme-text-muted block">Merchant</span>
-                  <span className="font-bold theme-text-main truncate block">
+                  <span className="font-bold theme-text-main truncate block font-brand-serif">
                     {extractedData.merchant}
                   </span>
                 </div>
 
                 <div className="p-2.5 rounded-xl theme-bg-card theme-border border">
                   <span className="text-[10px] theme-text-muted block">Category</span>
-                  <span className="font-bold text-emerald-500 truncate block">
+                  <span className="font-bold text-[#a38514] dark:text-[#D2AF26] truncate block">
                     {extractedData.category}
                   </span>
                 </div>
@@ -477,7 +477,7 @@ export const QaltaVoiceModal: React.FC<Props> = ({
 
                 <div className="p-2.5 rounded-xl theme-bg-card theme-border border">
                   <span className="text-[10px] theme-text-muted block">Account</span>
-                  <span className="font-semibold text-indigo-400 truncate block">
+                  <span className="font-semibold text-[#a38514] dark:text-[#D2AF26] truncate block">
                     {wallets.find((w) => w.id === extractedData.walletAccountId)?.name || 'Default Account'}
                   </span>
                 </div>
@@ -492,7 +492,7 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                 </button>
                 <button
                   onClick={handleConfirmAndSave}
-                  className="flex-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-2 py-2.5 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-extrabold shadow-lg shadow-[#D2AF26]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   id="confirm-voice-expense-btn"
                 >
                   <Check className="w-4 h-4" />
@@ -504,8 +504,8 @@ export const QaltaVoiceModal: React.FC<Props> = ({
 
           {/* Preset Voice Example Chips */}
           <div className="space-y-2 pt-2">
-            <span className="text-[11px] font-semibold theme-text-secondary flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-400" />
+            <span className="text-[11px] font-semibold theme-text-secondary flex items-center gap-1 font-brand-serif">
+              <Zap className="w-3 h-3 text-[#D2AF26]" />
               Try Example Voice Prompts
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -516,7 +516,7 @@ export const QaltaVoiceModal: React.FC<Props> = ({
                     setTranscript(ex);
                     processWithAI(ex);
                   }}
-                  className="px-2.5 py-1.5 rounded-xl theme-bg-subtle theme-border border hover:border-emerald-500/40 hover:text-emerald-500 theme-text-secondary text-[11px] transition-colors text-left cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl theme-bg-subtle theme-border border hover:border-[#D2AF26]/40 hover:text-[#a38514] dark:hover:text-[#D2AF26] theme-text-secondary text-[11px] transition-colors text-left cursor-pointer"
                 >
                   "{ex}"
                 </button>

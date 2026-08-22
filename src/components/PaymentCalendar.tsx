@@ -165,8 +165,8 @@ export const PaymentCalendar: React.FC<Props> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5">
-            <CalendarIcon className="w-6 h-6 text-emerald-500" />
+          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2.5 font-brand-serif">
+            <CalendarIcon className="w-6 h-6 text-[#D2AF26]" />
             Payment & Recurring Calendar
           </h1>
           <p className="text-xs theme-text-secondary mt-1">
@@ -227,7 +227,7 @@ export const PaymentCalendar: React.FC<Props> = ({
               return (
                 <div
                   key={`prev-${idx}`}
-                  className="min-h-18 p-1.5 rounded-xl theme-bg-subtle/40 opacity-30 text-[10px] text-slate-400 select-none"
+                  className="min-h-18 p-1.5 rounded-xl theme-bg-subtle/40 opacity-30 text-[10px] text-stone-400 select-none"
                 >
                   <span>{dayNum}</span>
                 </div>
@@ -253,9 +253,9 @@ export const PaymentCalendar: React.FC<Props> = ({
                   onClick={() => setSelectedDay(dateStr)}
                   className={`min-h-18 p-1.5 rounded-xl text-left flex flex-col justify-between transition-all cursor-pointer relative border ${
                     isSelected
-                      ? 'border-emerald-500 ring-2 ring-emerald-500/20 theme-bg-card'
+                      ? 'border-[#D2AF26] ring-2 ring-[#D2AF26]/20 theme-bg-card'
                       : isToday(dateStr)
-                      ? 'border-emerald-500/40 theme-bg-card'
+                      ? 'border-[#D2AF26]/40 theme-bg-card'
                       : 'theme-border hover:theme-bg-subtle theme-bg-card'
                   }`}
                   id={`cal-day-${dateStr}`}
@@ -264,7 +264,7 @@ export const PaymentCalendar: React.FC<Props> = ({
                     <span
                       className={`text-[11px] font-bold rounded-md px-1 ${
                         isToday(dateStr)
-                          ? 'bg-emerald-500 text-slate-950'
+                          ? 'bg-[#D2AF26] text-stone-950'
                           : 'theme-text-main'
                       }`}
                     >
@@ -275,13 +275,13 @@ export const PaymentCalendar: React.FC<Props> = ({
                     <div className="flex items-center gap-1">
                       {hasTrials && (
                         <div
-                          className="w-1.5 h-1.5 rounded-full bg-amber-500"
+                          className="w-1.5 h-1.5 rounded-full bg-[#D2AF26]"
                           title="Free Trial Expiration"
                         />
                       )}
                       {hasRenewals && (
                         <div
-                          className="w-1.5 h-1.5 rounded-full bg-indigo-500"
+                          className="w-1.5 h-1.5 rounded-full bg-stone-400"
                           title="Subscription Renewal"
                         />
                       )}
@@ -296,13 +296,13 @@ export const PaymentCalendar: React.FC<Props> = ({
                       </div>
                     )}
                     {hasIncome && (
-                      <div className="text-[10px] font-mono font-semibold text-emerald-500/90 truncate leading-none">
+                      <div className="text-[10px] font-mono font-semibold text-[#a38514] dark:text-[#D2AF26] truncate leading-none">
                         +{formatCurrency(data.totalIncome, currency)}
                       </div>
                     )}
                     {hasRenewals && (
                       <div className="text-[9px] theme-text-secondary truncate flex items-center gap-0.5 leading-none">
-                        <Repeat className="w-2.5 h-2.5 shrink-0 text-indigo-400" />
+                        <Repeat className="w-2.5 h-2.5 shrink-0 text-[#D2AF26]" />
                         <span>{data.renewals[0].name}</span>
                       </div>
                     )}
@@ -321,7 +321,7 @@ export const PaymentCalendar: React.FC<Props> = ({
                 <span className="text-[11px] uppercase tracking-wider theme-text-muted font-medium">
                   Date Ledger
                 </span>
-                <h2 className="text-base font-bold theme-text-main">
+                <h2 className="text-base font-bold theme-text-main font-brand-serif">
                   {formatDate(selectedDay)}
                 </h2>
               </div>
@@ -329,7 +329,7 @@ export const PaymentCalendar: React.FC<Props> = ({
               {onQuickAddExpenseForDate && (
                 <button
                   onClick={() => onQuickAddExpenseForDate(selectedDay)}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-[#D2AF26]/10 hover:bg-[#D2AF26]/20 text-[#a38514] dark:text-[#D2AF26] border border-[#D2AF26]/30 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                   title="Add transaction on this date"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -348,7 +348,7 @@ export const PaymentCalendar: React.FC<Props> = ({
               </div>
               <div>
                 <span className="text-[10px] theme-text-muted block">Income / Inflow</span>
-                <span className="text-sm font-bold font-mono text-emerald-500">
+                <span className="text-sm font-bold font-mono text-[#a38514] dark:text-[#D2AF26]">
                   {formatCurrency(selectedDayData.totalIncome, currency)}
                 </span>
               </div>
@@ -360,9 +360,9 @@ export const PaymentCalendar: React.FC<Props> = ({
               {selectedDayData.trials.map((trial) => (
                 <div
                   key={trial.id}
-                  className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1 text-xs"
+                  className="p-3 rounded-xl bg-[#D2AF26]/10 border border-[#D2AF26]/30 space-y-1 text-xs"
                 >
-                  <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold">
+                  <div className="flex items-center justify-between text-[#a38514] dark:text-[#D2AF26] font-bold">
                     <span className="flex items-center gap-1.5">
                       <ShieldAlert className="w-4 h-4" />
                       Free Trial Ends
@@ -383,7 +383,7 @@ export const PaymentCalendar: React.FC<Props> = ({
                 >
                   <div className="flex items-center justify-between font-semibold theme-text-main">
                     <span className="flex items-center gap-1.5">
-                      <Repeat className="w-3.5 h-3.5 text-indigo-400" />
+                      <Repeat className="w-3.5 h-3.5 text-[#D2AF26]" />
                       {renewal.name}
                     </span>
                     <span className="font-mono font-bold">
@@ -403,12 +403,12 @@ export const PaymentCalendar: React.FC<Props> = ({
                   <div
                     key={exp.id}
                     onClick={() => onSelectExpense?.(exp)}
-                    className="p-3 rounded-xl theme-bg-subtle theme-border border hover:border-emerald-500/40 transition-all cursor-pointer text-xs group"
+                    className="p-3 rounded-xl theme-bg-subtle theme-border border hover:border-[#D2AF26]/40 transition-all cursor-pointer text-xs group"
                   >
                     <div className="flex items-center justify-between font-semibold theme-text-main">
                       <div className="flex items-center gap-2">
                         {isIncome ? (
-                          <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-lg bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] flex items-center justify-center">
                             <ArrowDownLeft className="w-3 h-3" />
                           </div>
                         ) : (
@@ -417,7 +417,7 @@ export const PaymentCalendar: React.FC<Props> = ({
                           </div>
                         )}
                         <div>
-                          <div className="group-hover:text-emerald-500 transition-colors">
+                          <div className="group-hover:text-[#a38514] dark:group-hover:text-[#D2AF26] transition-colors">
                             {exp.merchant}
                           </div>
                           <span className="text-[10px] theme-text-muted font-normal">
@@ -428,7 +428,7 @@ export const PaymentCalendar: React.FC<Props> = ({
 
                       <div
                         className={`font-mono font-bold ${
-                          isIncome ? 'text-emerald-500' : 'theme-text-main'
+                          isIncome ? 'text-[#a38514] dark:text-[#D2AF26]' : 'theme-text-main'
                         }`}
                       >
                         {isIncome ? '+' : '-'}

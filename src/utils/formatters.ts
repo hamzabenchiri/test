@@ -89,10 +89,10 @@ export const CATEGORY_CONFIG: Record<
   },
   Groceries: {
     icon: 'ShoppingBag',
-    color: '#10b981',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/20',
+    color: '#D2AF26',
+    bg: 'bg-[#D2AF26]/10',
+    text: 'text-[#9a7d13] dark:text-[#D2AF26]',
+    border: 'border-[#D2AF26]/20',
     group: 'Needs',
   },
   Shopping: {
@@ -145,10 +145,10 @@ export const CATEGORY_CONFIG: Record<
   },
   Subscriptions: {
     icon: 'Repeat',
-    color: '#eab308',
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-500/20',
+    color: '#D2AF26',
+    bg: 'bg-[#D2AF26]/10',
+    text: 'text-[#9a7d13] dark:text-[#D2AF26]',
+    border: 'border-[#D2AF26]/20',
     group: 'Wants',
   },
   Technology: {
@@ -177,10 +177,10 @@ export const CATEGORY_CONFIG: Record<
   },
   'Salary & Income': {
     icon: 'TrendingUp',
-    color: '#10b981',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/20',
+    color: '#D2AF26',
+    bg: 'bg-[#D2AF26]/10',
+    text: 'text-[#9a7d13] dark:text-[#D2AF26]',
+    border: 'border-[#D2AF26]/20',
     group: 'Savings',
   },
   Investment: {

@@ -66,8 +66,8 @@ export const TransferModal: React.FC<Props> = ({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b theme-border">
           <div className="flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-indigo-400" />
-            <h2 className="text-base font-bold theme-text-main">Transfer Funds</h2>
+            <ArrowRightLeft className="w-5 h-5 text-[#D2AF26]" />
+            <h2 className="text-base font-bold theme-text-main font-brand-serif">Transfer Funds</h2>
           </div>
           <button
             onClick={onClose}
@@ -99,7 +99,7 @@ export const TransferModal: React.FC<Props> = ({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                className="w-full pl-12 pr-3 py-2 text-sm rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-indigo-500 shadow-xs"
+                className="w-full pl-12 pr-3 py-2 text-sm rounded-xl theme-bg-subtle theme-border border theme-text-main font-mono font-bold focus:outline-none focus:border-[#D2AF26] shadow-xs"
               />
             </div>
           </div>
@@ -110,7 +110,7 @@ export const TransferModal: React.FC<Props> = ({
             <select
               value={sourceWalletId}
               onChange={(e) => setSourceWalletId(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-indigo-500 cursor-pointer shadow-xs"
+              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
             >
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -122,7 +122,7 @@ export const TransferModal: React.FC<Props> = ({
 
           {/* Arrow divider */}
           <div className="flex justify-center -my-1">
-            <div className="w-7 h-7 rounded-full theme-bg-subtle theme-border border flex items-center justify-center text-indigo-400">
+            <div className="w-7 h-7 rounded-full theme-bg-subtle theme-border border flex items-center justify-center text-[#D2AF26]">
               <ArrowRightLeft className="w-3.5 h-3.5 rotate-90" />
             </div>
           </div>
@@ -133,7 +133,7 @@ export const TransferModal: React.FC<Props> = ({
             <select
               value={destWalletId}
               onChange={(e) => setDestWalletId(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-indigo-500 cursor-pointer shadow-xs"
+              className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
             >
               {wallets.map((w) => (
                 <option key={w.id} value={w.id} disabled={w.id === sourceWalletId}>
@@ -152,7 +152,7 @@ export const TransferModal: React.FC<Props> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-indigo-500 cursor-pointer shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] cursor-pointer shadow-xs"
               />
             </div>
             <div className="space-y-1">
@@ -162,7 +162,7 @@ export const TransferModal: React.FC<Props> = ({
                 placeholder="e.g. Monthly savings"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-indigo-500 shadow-xs"
+                className="w-full px-3 py-2 text-xs rounded-xl theme-bg-subtle theme-border border theme-text-main focus:outline-none focus:border-[#D2AF26] shadow-xs"
               />
             </div>
           </div>
@@ -178,7 +178,7 @@ export const TransferModal: React.FC<Props> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 font-bold text-xs shadow-lg shadow-[#D2AF26]/20 cursor-pointer transition-all"
             >
               <Check className="w-4 h-4" />
               <span>Confirm Transfer</span>

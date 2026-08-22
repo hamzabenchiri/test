@@ -1,121 +1,137 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
-  Send,
   Bot,
   User,
+  Send,
+  RefreshCw,
+  TrendingUp,
   AlertTriangle,
   CheckCircle2,
-  TrendingUp,
-  RefreshCw,
-  Zap,
   Lightbulb,
+  ArrowUpRight,
   ShieldCheck,
-  Flame,
+  Zap,
 } from 'lucide-react';
-import { AIAdvisorMessage, AppTheme, CategoryBudget, Expense, SpendingInsight } from '../types';
+import { Expense, ExpenseCategory, AppTheme, CategoryBudget } from '../types';
 import { formatCurrency } from '../utils/formatters';
+
+interface AdvisorInsight {
+  id: string;
+  type: 'tip' | 'alert' | 'celebration';
+  title: string;
+  message: string;
+  actionable?: string;
+}
+
+interface ChatMessage {
+  id: string;
+  sender: 'ai' | 'user';
+  text: string;
+  timestamp: string;
+  suggestedActions?: string[];
+}
 
 interface Props {
   expenses: Expense[];
   budgets: CategoryBudget[];
   currency: string;
-  insights: SpendingInsight[];
-  healthScore: number;
-  forecastSpend: number;
+  theme: AppTheme;
+  insights: AdvisorInsight[];
   summaryParagraph: string;
+  forecastSpend: number;
+  healthScore: number;
   onRefreshInsights: () => void;
   isRefreshingInsights: boolean;
-  theme?: AppTheme;
 }
 
 export const AiAdvisor: React.FC<Props> = ({
   expenses,
   budgets,
   currency,
+  theme,
   insights,
-  healthScore,
-  forecastSpend,
   summaryParagraph,
+  forecastSpend,
+  healthScore,
   onRefreshInsights,
   isRefreshingInsights,
-  theme = 'dark',
 }) => {
-  const [messages, setMessages] = useState<AIAdvisorMessage[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: 'welcome',
-      sender: 'assistant',
-      text: "Hello! I'm your Spense AI Financial Strategist. I've analyzed your scanned receipts, monthly budget limits, and spending pace. How can I assist you with your money today?",
+      id: 'welcome-1',
+      sender: 'ai',
+      text: `Greetings. I am your Spense Financial Intelligence Advisor. I have analyzed your recent transactions across all portfolios. How may I assist your financial planning today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       suggestedActions: [
-        'Analyze my top spending categories',
-        'Can I afford a $200 weekend trip?',
-        'How can I save $150 this month?',
-        'Review my recurring subscriptions',
+        'How can I optimize my monthly savings?',
+        'Analyze my dining & groceries burn rate',
+        'Which subscriptions can I safely trim?',
       ],
     },
   ]);
-
   const [inputQuestion, setInputQuestion] = useState('');
   const [isSending, setIsSending] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isSending]);
+  }, [messages]);
 
   const handleSendMessage = async (textToSend?: string) => {
-    const query = (textToSend || inputQuestion).trim();
-    if (!query || isSending) return;
+    const text = (textToSend || inputQuestion).trim();
+    if (!text || isSending) return;
 
-    const userMsg: AIAdvisorMessage = {
+    const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
-      text: query,
+      text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMsg]);
     setInputQuestion('');
     setIsSending(true);
 
     try {
-      const res = await fetch('/api/chat-advisor', {
+      const res = await fetch('/api/advisor-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newMessages.map((m) => ({ sender: m.sender, text: m.text })),
-          expenses,
-          budgets,
-          userQuestion: query,
+          question: text,
+          context: {
+            totalSpent: expenses.reduce((s, e) => (e.type === 'expense' ? s + e.amount : s), 0),
+            totalIncome: expenses.reduce((s, e) => (e.type === 'income' ? s + e.amount : s), 0),
+            currency,
+            recentExpensesCount: expenses.length,
+            healthScore,
+          },
         }),
       });
 
-      if (!res.ok) throw new Error('Chat request failed');
+      if (!res.ok) throw new Error('Advisor API error');
       const data = await res.json();
 
-      const assistantMsg: AIAdvisorMessage = {
-        id: `assistant-${Date.now()}`,
-        sender: 'assistant',
-        text: data.reply || "I've analyzed your records and updated your budget plan.",
+      const aiMsg: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'ai',
+        text: data.reply || "Based on your financial ledger, you are maintaining a healthy reserve ratio.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         suggestedActions: data.suggestedActions || [
-          'Show category breakdown',
-          'Give me a 3-step saving plan',
+          'Forecast month-end savings balance',
+          'Review high-volume expenditure categories',
         ],
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err: any) {
-      console.warn('AI Chat fallback:', err);
-      // Friendly fallback
-      const totalMonth = expenses.reduce((s, e) => s + e.amount, 0);
-      const fallbackMsg: AIAdvisorMessage = {
-        id: `assistant-${Date.now()}`,
-        sender: 'assistant',
-        text: `Based on your ${expenses.length} tracked expenses totaling ${formatCurrency(
-          totalMonth,
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      console.warn('AI chat error fallback:', err);
+      // Fallback local smart advisor response
+      const fallbackMsg: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'ai',
+        text: `Based on your current recorded activity of ${formatCurrency(
+          expenses.reduce((s, e) => (e.type === 'expense' ? s + e.amount : s), 0),
           currency
         )}, your highest spending areas are Food & Dining and Groceries. Staying under your discretionary targets for the rest of the week will keep you comfortably within your budget goals!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -132,9 +148,9 @@ export const AiAdvisor: React.FC<Props> = ({
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold theme-text-main flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-            Qalta AI Financial Advisor
+          <h2 className="text-xl font-bold theme-text-main flex items-center gap-2 font-brand-serif">
+            <Sparkles className="w-5 h-5 text-[#D2AF26]" />
+            Spense AI Financial Advisor
           </h2>
           <p className="text-xs theme-text-secondary">
             Intelligent cashflow diagnostics, automated budget advice, and conversational planner.
@@ -144,11 +160,11 @@ export const AiAdvisor: React.FC<Props> = ({
         <button
           onClick={onRefreshInsights}
           disabled={isRefreshingInsights}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl theme-bg-card theme-border border theme-text-main text-xs font-medium shadow-xs hover:theme-bg-subtle transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl theme-bg-card theme-border border theme-text-main text-xs font-medium shadow-xs hover:theme-bg-subtle transition-all self-start sm:self-auto cursor-pointer"
           id="refresh-ai-insights-btn"
         >
           <RefreshCw
-            className={`w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 ${isRefreshingInsights ? 'animate-spin' : ''}`}
+            className={`w-3.5 h-3.5 text-[#D2AF26] ${isRefreshingInsights ? 'animate-spin' : ''}`}
           />
           <span>{isRefreshingInsights ? 'Analyzing Ledger...' : 'Re-run Diagnostics'}</span>
         </button>
@@ -161,14 +177,14 @@ export const AiAdvisor: React.FC<Props> = ({
           <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
               <path
-                className="text-slate-300 dark:text-slate-800"
+                className="text-stone-300 dark:text-stone-800"
                 strokeWidth="3.5"
                 stroke="currentColor"
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path
-                className="text-emerald-500 dark:text-emerald-400 transition-all duration-1000"
+                className="text-[#D2AF26] transition-all duration-1000"
                 strokeDasharray={`${healthScore || 85}, 100`}
                 strokeWidth="3.5"
                 strokeLinecap="round"
@@ -184,7 +200,7 @@ export const AiAdvisor: React.FC<Props> = ({
 
           <div>
             <span className="text-xs theme-text-muted font-medium block">Financial Health</span>
-            <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <h4 className="text-sm font-semibold text-[#a38514] dark:text-[#D2AF26] font-brand-serif">
               {healthScore >= 80 ? 'Strong Standing' : healthScore >= 60 ? 'Moderate' : 'Caution'}
             </h4>
             <span className="text-[11px] theme-text-muted">Based on budget discipline</span>
@@ -194,7 +210,7 @@ export const AiAdvisor: React.FC<Props> = ({
         {/* Spend Forecast */}
         <div className="p-5 rounded-2xl theme-bg-card theme-border border shadow-md flex flex-col justify-between">
           <span className="text-xs theme-text-muted font-medium">Month-End Spend Forecast</span>
-          <div className="text-xl font-bold theme-text-main font-mono mt-1">
+          <div className="text-xl font-bold theme-text-main font-mono mt-1 text-[#a38514] dark:text-[#D2AF26]">
             {formatCurrency(forecastSpend || 1850, currency)}
           </div>
           <span className="text-[11px] theme-text-muted">Projected from daily burn rate</span>
@@ -207,15 +223,15 @@ export const AiAdvisor: React.FC<Props> = ({
             {summaryParagraph ||
               'Your grocery & essential spending is well-balanced. Limiting extra dining out will maximize end-of-month savings.'}
           </p>
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-updated</span>
+          <span className="text-[10px] text-[#a38514] dark:text-[#D2AF26] font-medium">Auto-updated</span>
         </div>
       </div>
 
       {/* Strategic Insights Cards */}
       {insights.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold theme-text-main flex items-center gap-2">
-            <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+          <h3 className="text-sm font-semibold theme-text-main flex items-center gap-2 font-brand-serif">
+            <Lightbulb className="w-4 h-4 text-[#D2AF26]" />
             Detected Action Items & Opportunities
           </h3>
 
@@ -223,24 +239,24 @@ export const AiAdvisor: React.FC<Props> = ({
             {insights.map((insight) => (
               <div
                 key={insight.id}
-                className="p-4 rounded-2xl theme-bg-card theme-border border space-y-2 hover:border-emerald-500/50 transition-colors shadow-md"
+                className="p-4 rounded-2xl theme-bg-card theme-border border space-y-2 hover:border-[#D2AF26]/50 transition-colors shadow-md"
               >
                 <div className="flex items-center gap-2">
                   {insight.type === 'alert' ? (
                     <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
                   ) : insight.type === 'celebration' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#D2AF26] shrink-0" />
                   ) : (
-                    <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                    <Sparkles className="w-4 h-4 text-[#D2AF26] shrink-0" />
                   )}
-                  <h4 className="text-xs font-semibold theme-text-main">{insight.title}</h4>
+                  <h4 className="text-xs font-semibold theme-text-main font-brand-serif">{insight.title}</h4>
                 </div>
 
                 <p className="text-xs theme-text-secondary leading-relaxed">{insight.message}</p>
 
                 {insight.actionable && (
-                  <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[11px] text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1.5">
-                    <Zap className="w-3 h-3 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                  <div className="p-2 bg-[#D2AF26]/10 border border-[#D2AF26]/20 rounded-lg text-[11px] text-[#a38514] dark:text-[#D2AF26] font-medium flex items-center gap-1.5">
+                    <Zap className="w-3 h-3 text-[#D2AF26] shrink-0" />
                     <span>Action: {insight.actionable}</span>
                   </div>
                 )}
@@ -255,13 +271,13 @@ export const AiAdvisor: React.FC<Props> = ({
         {/* Chat Header */}
         <div className="px-5 py-3.5 border-b theme-border theme-bg-card flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <div className="w-7 h-7 rounded-lg bg-[#D2AF26]/10 border border-[#D2AF26]/20 flex items-center justify-center text-[#a38514] dark:text-[#D2AF26]">
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-semibold theme-text-main">Qalta AI Assistant</h4>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 inline-block" />
+              <h4 className="text-xs font-semibold theme-text-main font-brand-serif">Spense AI Assistant</h4>
+              <span className="text-[10px] text-[#a38514] dark:text-[#D2AF26] flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D2AF26] inline-block" />
                 Ready to answer questions
               </span>
             </div>
@@ -280,8 +296,8 @@ export const AiAdvisor: React.FC<Props> = ({
               <div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                   msg.sender === 'user'
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-xs'
-                    : 'theme-bg-card text-emerald-600 dark:text-emerald-400 theme-border border'
+                    ? 'bg-[#D2AF26] text-stone-950 font-bold shadow-xs'
+                    : 'theme-bg-card text-[#a38514] dark:text-[#D2AF26] theme-border border'
                 }`}
               >
                 {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -291,7 +307,7 @@ export const AiAdvisor: React.FC<Props> = ({
                 <div
                   className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-emerald-500 text-slate-950 font-semibold rounded-tr-none shadow-xs'
+                      ? 'bg-[#D2AF26] text-stone-950 font-semibold rounded-tr-none shadow-xs'
                       : 'theme-bg-card theme-text-main theme-border border rounded-tl-none shadow-xs'
                   }`}
                 >
@@ -305,7 +321,7 @@ export const AiAdvisor: React.FC<Props> = ({
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(action)}
-                        className="text-[11px] px-2.5 py-1 theme-bg-card hover:theme-bg-subtle theme-border border hover:border-emerald-500/50 rounded-full theme-text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 shadow-xs transition-all text-left"
+                        className="text-[11px] px-2.5 py-1 theme-bg-card hover:theme-bg-subtle theme-border border hover:border-[#D2AF26]/50 rounded-full theme-text-secondary hover:text-[#a38514] dark:hover:text-[#D2AF26] shadow-xs transition-all text-left cursor-pointer"
                       >
                         {action}
                       </button>
@@ -318,12 +334,12 @@ export const AiAdvisor: React.FC<Props> = ({
 
           {isSending && (
             <div className="flex gap-3 max-w-[85%]">
-              <div className="w-7 h-7 rounded-lg theme-bg-card text-emerald-600 dark:text-emerald-400 theme-border border flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg theme-bg-card text-[#a38514] dark:text-[#D2AF26] theme-border border flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4" />
               </div>
               <div className="p-3.5 rounded-2xl theme-bg-card theme-border border text-xs theme-text-muted flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 animate-spin" />
-                <span>Qalta is formulating advice...</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#D2AF26] animate-spin" />
+                <span>Spense is formulating advice...</span>
               </div>
             </div>
           )}
@@ -344,14 +360,14 @@ export const AiAdvisor: React.FC<Props> = ({
               type="text"
               value={inputQuestion}
               onChange={(e) => setInputQuestion(e.target.value)}
-              placeholder="Ask Qalta about your expenses, budgets, or savings..."
-              className="flex-1 px-4 py-2.5 theme-bg-subtle theme-border border rounded-xl text-xs theme-text-main placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 shadow-xs transition-colors"
+              placeholder="Ask Spense about your expenses, budgets, or savings..."
+              className="flex-1 px-4 py-2.5 theme-bg-subtle theme-border border rounded-xl text-xs theme-text-main placeholder-stone-400 focus:outline-none focus:border-[#D2AF26] shadow-xs transition-colors"
               id="ai-chat-input"
             />
             <button
               type="submit"
               disabled={!inputQuestion.trim() || isSending}
-              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5 shrink-0"
+              className="px-4 py-2.5 bg-[#D2AF26] hover:bg-[#c29f1e] disabled:opacity-40 text-stone-950 font-bold text-xs rounded-xl shadow-lg shadow-[#D2AF26]/20 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
               id="send-ai-chat-btn"
             >
               <span>Ask</span>
@@ -363,4 +379,3 @@ export const AiAdvisor: React.FC<Props> = ({
     </div>
   );
 };
-

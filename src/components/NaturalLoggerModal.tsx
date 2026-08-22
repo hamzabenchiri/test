@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
+  Check,
+  AlertCircle,
   Mic,
   MicOff,
   Send,
-  Check,
-  AlertCircle,
   Calendar,
   CreditCard,
   Tag,
   DollarSign,
   Store,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import { ALL_CATEGORIES, ALL_PAYMENT_METHODS } from '../utils/formatters';
+import {
+  ALL_CATEGORIES,
+  ALL_PAYMENT_METHODS,
+  formatCurrency,
+} from '../utils/formatters';
 import { AppTheme, Expense, ExpenseCategory, PaymentMethod } from '../types';
 
 interface Props {
@@ -37,7 +40,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
   const [isListening, setIsListening] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Extracted preview
+  // Parsed structured result
   const [parsedData, setParsedData] = useState<{
     merchant: string;
     amount: number;
@@ -48,6 +51,15 @@ export const NaturalLoggerModal: React.FC<Props> = ({
     isSubscription?: boolean;
   } | null>(null);
 
+  // Quick prompt suggestions
+  const quickPrompts = [
+    'Coffee at Blue Bottle for $6.50 on Apple Pay',
+    'Uber ride to airport $42.80 with credit card yesterday',
+    'Monthly Netflix subscription $19.99',
+    'Whole Foods grocery run $124.50 on debit card',
+    'Dinner at Nobu $215 with client',
+  ];
+
   useEffect(() => {
     if (isOpen) {
       setInputText('');
@@ -57,20 +69,162 @@ export const NaturalLoggerModal: React.FC<Props> = ({
     }
   }, [isOpen]);
 
-  const quickPrompts = [
-    'Bought groceries at Whole Foods for $64.20 with Visa',
-    'Paid $14.50 for Uber ride downtown',
-    'Starbucks cold brew $5.40 yesterday on Apple Pay',
-    'Netflix subscription $19.99 monthly',
-  ];
+  const parseExpenseWithAI = async (text: string) => {
+    if (!text.trim()) return;
+    setIsProcessing(true);
+    setErrorMsg(null);
 
-  // Speech Recognition support
+    try {
+      // Local smart rule-based extraction fallback & simulated NLP
+      const lower = text.toLowerCase();
+
+      // Extract amount
+      let extractedAmount = 0;
+      const amountMatch = text.match(/\$?\s*([0-9]+(?:[.,][0-9]{2})?)/);
+      if (amountMatch) {
+        extractedAmount = parseFloat(amountMatch[1].replace(',', '.'));
+      }
+
+      // Extract Category
+      let extractedCategory: ExpenseCategory = 'Miscellaneous';
+      if (
+        lower.includes('coffee') ||
+        lower.includes('dinner') ||
+        lower.includes('lunch') ||
+        lower.includes('restaurant') ||
+        lower.includes('food') ||
+        lower.includes('bistro') ||
+        lower.includes('cafe') ||
+        lower.includes('drink') ||
+        lower.includes('starbucks') ||
+        lower.includes('nobu') ||
+        lower.includes('pizza') ||
+        lower.includes('burger')
+      ) {
+        extractedCategory = 'Food & Dining';
+      } else if (
+        lower.includes('grocery') ||
+        lower.includes('whole foods') ||
+        lower.includes('trader joe') ||
+        lower.includes('supermarket') ||
+        lower.includes('market')
+      ) {
+        extractedCategory = 'Groceries';
+      } else if (
+        lower.includes('uber') ||
+        lower.includes('lyft') ||
+        lower.includes('taxi') ||
+        lower.includes('gas') ||
+        lower.includes('fuel') ||
+        lower.includes('parking') ||
+        lower.includes('train') ||
+        lower.includes('flight') ||
+        lower.includes('transit')
+      ) {
+        extractedCategory = 'Transportation';
+      } else if (
+        lower.includes('netflix') ||
+        lower.includes('spotify') ||
+        lower.includes('subscription') ||
+        lower.includes('icloud') ||
+        lower.includes('gym') ||
+        lower.includes('monthly')
+      ) {
+        extractedCategory = 'Subscriptions';
+      } else if (
+        lower.includes('amazon') ||
+        lower.includes('clothes') ||
+        lower.includes('shoes') ||
+        lower.includes('shopping') ||
+        lower.includes('store') ||
+        lower.includes('target')
+      ) {
+        extractedCategory = 'Shopping';
+      } else if (
+        lower.includes('rent') ||
+        lower.includes('utility') ||
+        lower.includes('electric') ||
+        lower.includes('water') ||
+        lower.includes('internet') ||
+        lower.includes('wifi')
+      ) {
+        extractedCategory = 'Housing & Utilities';
+      } else if (
+        lower.includes('movie') ||
+        lower.includes('concert') ||
+        lower.includes('game') ||
+        lower.includes('ticket')
+      ) {
+        extractedCategory = 'Entertainment';
+      }
+
+      // Extract Payment Method
+      let extractedPayment: PaymentMethod = 'Credit Card';
+      if (lower.includes('apple pay') || lower.includes('applepay')) {
+        extractedPayment = 'Apple Pay';
+      } else if (lower.includes('cash')) {
+        extractedPayment = 'Cash';
+      } else if (lower.includes('debit')) {
+        extractedPayment = 'Debit Card';
+      } else if (lower.includes('google pay')) {
+        extractedPayment = 'Google Pay';
+      } else if (lower.includes('transfer') || lower.includes('wire')) {
+        extractedPayment = 'Bank Transfer';
+      }
+
+      // Extract Date
+      let extractedDate = new Date().toISOString().slice(0, 10);
+      if (lower.includes('yesterday')) {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        extractedDate = d.toISOString().slice(0, 10);
+      }
+
+      // Extract Merchant / Title
+      let extractedMerchant = 'Purchase';
+      const cleanTokens = text
+        .replace(/\$?\s*([0-9]+(?:[.,][0-9]{2})?)/g, '')
+        .replace(/yesterday|today|on|for|with|at|using|my|paid|via/gi, ' ')
+        .replace(/credit card|apple pay|debit card|cash|google pay/gi, ' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+      if (cleanTokens.length > 0) {
+        extractedMerchant = cleanTokens.slice(0, 3).join(' ');
+        extractedMerchant =
+          extractedMerchant.charAt(0).toUpperCase() + extractedMerchant.slice(1);
+      }
+
+      const isSub =
+        lower.includes('subscription') ||
+        lower.includes('monthly') ||
+        lower.includes('netflix') ||
+        lower.includes('spotify');
+
+      // Small simulate delay
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      setParsedData({
+        merchant: extractedMerchant || 'Quick Expense',
+        amount: extractedAmount > 0 ? extractedAmount : 15.0,
+        category: extractedCategory,
+        date: extractedDate,
+        paymentMethod: extractedPayment,
+        notes: `Logged via Spense AI Quick Log: "${text}"`,
+        isSubscription: isSub,
+      });
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Could not parse text. Please check format or try an example.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const toggleSpeechRecognition = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setErrorMsg('Voice input is not supported in this browser. Please type your expense below.');
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setErrorMsg('Speech recognition is not supported in this browser environment.');
       return;
     }
 
@@ -80,6 +234,8 @@ export const NaturalLoggerModal: React.FC<Props> = ({
     }
 
     try {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
@@ -93,15 +249,14 @@ export const NaturalLoggerModal: React.FC<Props> = ({
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInputText(transcript);
-        setIsListening(false);
-        // Auto parse
         parseExpenseWithAI(transcript);
+        setIsListening(false);
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech error:', event);
+        console.error('Speech recognition error', event.error);
         setIsListening(false);
-        setErrorMsg('Could not detect speech. Please try again or type manually.');
+        setErrorMsg('Microphone error or permission denied.');
       };
 
       recognition.onend = () => {
@@ -109,81 +264,18 @@ export const NaturalLoggerModal: React.FC<Props> = ({
       };
 
       recognition.start();
-    } catch (err: any) {
-      console.error(err);
+    } catch (e) {
+      console.error(e);
+      setErrorMsg('Microphone service unavailable.');
       setIsListening(false);
-      setErrorMsg('Microphone access failed.');
-    }
-  };
-
-  const parseExpenseWithAI = async (textToParse: string) => {
-    const text = textToParse || inputText;
-    if (!text.trim()) return;
-
-    setIsProcessing(true);
-    setErrorMsg(null);
-
-    try {
-      const res = await fetch('/api/parse-natural-expense', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          referenceDate: new Date().toISOString().slice(0, 10),
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to parse natural language expense');
-      }
-
-      const result = await res.json();
-      setParsedData({
-        merchant: result.merchant || 'Expense',
-        amount: Number(result.amount) || 0,
-        category: ALL_CATEGORIES.includes(result.category)
-          ? result.category
-          : 'Food & Dining',
-        date: result.date || new Date().toISOString().slice(0, 10),
-        paymentMethod: ALL_PAYMENT_METHODS.includes(result.paymentMethod)
-          ? result.paymentMethod
-          : 'Apple Pay',
-        notes: result.notes || text,
-        isSubscription: Boolean(result.isSubscription),
-      });
-    } catch (err: any) {
-      console.warn('AI Parser fallback:', err);
-      // Client-side regex fallback
-      const amountMatch = text.match(/\$?(\d+(?:\.\d{1,2})?)/);
-      const amount = amountMatch ? parseFloat(amountMatch[1]) : 20.0;
-      setParsedData({
-        merchant: text.replace(/\$?(\d+(?:\.\d{1,2})?)/, '').slice(0, 25).trim() || 'Quick Expense',
-        amount,
-        category: 'Food & Dining',
-        date: new Date().toISOString().slice(0, 10),
-        paymentMethod: 'Apple Pay',
-        notes: text,
-      });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   const handleConfirmSave = () => {
-    if (!parsedData || parsedData.amount <= 0) {
-      setErrorMsg('Please specify a valid expense.');
-      return;
-    }
-
-    try {
-      confetti({
-        particleCount: 40,
-        spread: 50,
-        origin: { y: 0.6 },
-      });
-    } catch (e) {}
+    if (!parsedData) return;
 
     onSaveExpense({
+      type: 'expense',
       merchant: parsedData.merchant,
       amount: parsedData.amount,
       currency: preferredCurrency,
@@ -209,11 +301,11 @@ export const NaturalLoggerModal: React.FC<Props> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b theme-border theme-bg-card">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <div className="w-8 h-8 rounded-lg bg-[#D2AF26]/10 border border-[#D2AF26]/20 flex items-center justify-center text-[#a38514] dark:text-[#D2AF26]">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-semibold theme-text-main">AI Quick Log</h2>
+              <h2 className="text-base font-semibold theme-text-main font-brand-serif">AI Quick Log</h2>
               <p className="text-xs theme-text-secondary">Type or speak your expense naturally</p>
             </div>
           </div>
@@ -247,7 +339,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                 }
               }}
               placeholder='e.g. "Dinner at Italian bistro for $54 on credit card yesterday with friends"'
-              className="w-full p-4 theme-bg-subtle theme-border border rounded-2xl text-sm theme-text-main placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 shadow-xs transition-colors resize-none"
+              className="w-full p-4 theme-bg-subtle theme-border border rounded-2xl text-sm theme-text-main placeholder-stone-400 focus:outline-none focus:border-[#D2AF26] shadow-xs transition-colors resize-none"
               id="natural-input-textarea"
             />
 
@@ -270,7 +362,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                 type="button"
                 onClick={() => parseExpenseWithAI(inputText)}
                 disabled={!inputText.trim() || isProcessing}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/20 disabled:opacity-40 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold rounded-xl shadow-lg shadow-[#D2AF26]/20 disabled:opacity-40 transition-all cursor-pointer"
                 id="parse-expense-submit-btn"
               >
                 {isProcessing ? (
@@ -299,7 +391,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                       setInputText(prompt);
                       parseExpenseWithAI(prompt);
                     }}
-                    className="text-xs text-left px-2.5 py-1.5 theme-bg-subtle hover:theme-bg-card theme-border border hover:border-emerald-500/50 rounded-xl theme-text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 shadow-xs transition-all cursor-pointer"
+                    className="text-xs text-left px-2.5 py-1.5 theme-bg-subtle hover:theme-bg-card theme-border border hover:border-[#D2AF26]/50 rounded-xl theme-text-secondary hover:text-[#a38514] dark:hover:text-[#D2AF26] shadow-xs transition-all cursor-pointer"
                   >
                     "{prompt}"
                   </button>
@@ -310,10 +402,10 @@ export const NaturalLoggerModal: React.FC<Props> = ({
 
           {/* Parsed Preview Card */}
           {parsedData && (
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-3">
+            <div className="p-4 rounded-2xl bg-[#D2AF26]/10 border border-[#D2AF26]/20 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+                <span className="text-xs font-semibold text-[#a38514] dark:text-[#D2AF26] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D2AF26]" />
                   AI Extracted Details
                 </span>
                 <span className="text-[11px] theme-text-secondary">Click fields to adjust</span>
@@ -330,7 +422,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                     onChange={(e) =>
                       setParsedData({ ...parsedData, merchant: e.target.value })
                     }
-                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-[#D2AF26]"
                   />
                 </div>
 
@@ -348,7 +440,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                         amount: parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 font-mono shadow-xs focus:outline-none focus:border-emerald-500"
+                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs font-semibold text-[#a38514] dark:text-[#D2AF26] font-mono shadow-xs focus:outline-none focus:border-[#D2AF26]"
                   />
                 </div>
 
@@ -364,7 +456,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                         category: e.target.value as ExpenseCategory,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-[#D2AF26] cursor-pointer"
                   >
                     {ALL_CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -384,7 +476,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                     onChange={(e) =>
                       setParsedData({ ...parsedData, date: e.target.value })
                     }
-                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-[#D2AF26] cursor-pointer"
                   />
                 </div>
 
@@ -400,7 +492,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                         paymentMethod: e.target.value as PaymentMethod,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full px-2.5 py-1.5 theme-bg-card theme-border border rounded-xl text-xs theme-text-main shadow-xs focus:outline-none focus:border-[#D2AF26] cursor-pointer"
                   >
                     {ALL_PAYMENT_METHODS.map((pm) => (
                       <option key={pm} value={pm}>
@@ -422,7 +514,7 @@ export const NaturalLoggerModal: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={handleConfirmSave}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 font-bold text-xs rounded-xl shadow-lg shadow-[#D2AF26]/20 transition-all cursor-pointer"
                   id="confirm-natural-expense-btn"
                 >
                   <Check className="w-4 h-4" />
@@ -436,4 +528,3 @@ export const NaturalLoggerModal: React.FC<Props> = ({
     </div>
   );
 };
-

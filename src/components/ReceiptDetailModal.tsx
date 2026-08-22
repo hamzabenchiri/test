@@ -57,14 +57,14 @@ export const ReceiptDetailModal: React.FC<Props> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b theme-border theme-bg-card">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl theme-bg-subtle theme-border border shadow-xs flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <div className="w-10 h-10 rounded-xl theme-bg-subtle theme-border border shadow-xs flex items-center justify-center text-[#a38514] dark:text-[#D2AF26]">
               <CategoryIcon category={expense.category} className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold theme-text-main flex items-center gap-2">
+              <h2 className="text-base font-semibold theme-text-main flex items-center gap-2 font-brand-serif">
                 {expense.merchant}
                 {expense.isSubscription && (
-                  <span className="px-2 py-0.5 text-[10px] bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 rounded-full font-medium flex items-center gap-1">
+                  <span className="px-2 py-0.5 text-[10px] bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] border border-[#D2AF26]/20 rounded-full font-medium flex items-center gap-1">
                     <Repeat className="w-3 h-3" /> Sub
                   </span>
                 )}
@@ -82,7 +82,7 @@ export const ReceiptDetailModal: React.FC<Props> = ({
                 onClose();
                 onEdit(expense);
               }}
-              className="p-2 theme-text-muted hover:theme-text-main rounded-lg hover:theme-bg-subtle transition-colors"
+              className="p-2 theme-text-muted hover:theme-text-main rounded-lg hover:theme-bg-subtle transition-colors cursor-pointer"
               title="Edit expense"
             >
               <Edit2 className="w-4 h-4" />
@@ -92,14 +92,14 @@ export const ReceiptDetailModal: React.FC<Props> = ({
                 onDelete(expense.id);
                 onClose();
               }}
-              className="p-2 theme-text-muted hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:theme-bg-subtle transition-colors"
+              className="p-2 theme-text-muted hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:theme-bg-subtle transition-colors cursor-pointer"
               title="Delete expense"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 theme-text-muted hover:theme-text-main rounded-lg hover:theme-bg-subtle transition-colors"
+              className="p-2 theme-text-muted hover:theme-text-main rounded-lg hover:theme-bg-subtle transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -111,8 +111,8 @@ export const ReceiptDetailModal: React.FC<Props> = ({
           {/* Left: Receipt Preview */}
           <div className="md:col-span-6 space-y-3">
             <div className="flex items-center justify-between text-xs theme-text-secondary font-medium">
-              <span className="flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+              <span className="flex items-center gap-1.5 font-brand-serif">
+                <FileText className="w-3.5 h-3.5 text-[#D2AF26]" />
                 <span>Captured Receipt</span>
               </span>
               {expense.receiptImage && (
@@ -159,8 +159,8 @@ export const ReceiptDetailModal: React.FC<Props> = ({
             </div>
 
             {expense.receiptConfidence && (
-              <div className="flex items-center justify-between text-xs px-3 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 theme-text-main">
-                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+              <div className="flex items-center justify-between text-xs px-3 py-2 bg-[#D2AF26]/10 rounded-xl border border-[#D2AF26]/20 theme-text-main">
+                <span className="flex items-center gap-1.5 text-[#a38514] dark:text-[#D2AF26] font-medium">
                   <Sparkles className="w-3.5 h-3.5" />
                   OCR Verified
                 </span>
@@ -175,7 +175,7 @@ export const ReceiptDetailModal: React.FC<Props> = ({
             <div className="p-4 theme-bg-subtle rounded-xl theme-border border flex items-center justify-between">
               <div>
                 <span className="text-xs theme-text-muted block font-medium">Total Paid</span>
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                <span className="text-2xl font-bold text-[#a38514] dark:text-[#D2AF26] font-mono">
                   {formatCurrency(expense.amount, expense.currency)}
                 </span>
               </div>
@@ -213,8 +213,8 @@ export const ReceiptDetailModal: React.FC<Props> = ({
 
             {/* Line Items List */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold theme-text-secondary flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+              <span className="text-xs font-semibold theme-text-secondary flex items-center gap-1.5 font-brand-serif">
+                <Layers className="w-3.5 h-3.5 text-[#D2AF26]" />
                 <span>Itemized Breakdown ({expense.items?.length || 0} items)</span>
               </span>
 
@@ -231,7 +231,7 @@ export const ReceiptDetailModal: React.FC<Props> = ({
                         </span>
                         <span className="theme-text-main font-medium">{item.name}</span>
                       </div>
-                      <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                      <span className="font-mono text-[#a38514] dark:text-[#D2AF26]">
                         {formatCurrency(item.price, expense.currency)}
                       </span>
                     </div>
