@@ -290,41 +290,13 @@ export const DashboardOverview: React.FC<Props> = ({
       )}
 
       {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold theme-text-main tracking-tight flex items-center gap-2 font-brand-serif">
-            <span>Financial Overview</span>
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#D2AF26]/10 text-[#a38514] dark:text-[#D2AF26] border border-[#D2AF26]/25 font-sans">
-              Multi-Currency
-            </span>
-          </h1>
-          <p className="text-xs theme-text-secondary mt-0.5">
-            Real-time daily allowance, net worth aggregate, and subscription timeline
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Quick Natural AI */}
-          <button
-            onClick={onOpenNaturalLog}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl theme-bg-card theme-border border hover:theme-bg-subtle theme-text-main text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            id="quick-ai-quicklog-btn"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#D2AF26]" />
-            <span>AI QuickLog</span>
-          </button>
-
-          {/* Add Manual */}
-          {onOpenManualAdd && (
-            <button
-              onClick={onOpenManualAdd}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#D2AF26] hover:bg-[#c29f1e] text-stone-950 text-xs font-bold shadow-md shadow-[#D2AF26]/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-              id="quick-add-transaction-btn"
-            >
-              <span>+ Record Entry</span>
-            </button>
-          )}
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold theme-text-main tracking-tight font-brand-serif">
+          Financial Overview
+        </h1>
+        <p className="text-xs theme-text-secondary mt-0.5">
+          Real-time daily allowance, net worth aggregate, and subscription timeline
+        </p>
       </div>
 
       {/* Executive Metric Cards */}

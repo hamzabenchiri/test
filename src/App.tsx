@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactNativeApp from './ReactNativeApp.jsx';
 import { Navbar, NavTabType } from './components/Navbar';
 import { DashboardOverview } from './components/DashboardOverview';
 import { ExpensesList } from './components/ExpensesList';
@@ -120,6 +121,20 @@ export default function App() {
       const nextVal = !prev;
       localStorage.setItem('spense_show_voice_banner_v1', nextVal ? 'true' : 'false');
       showToast(nextVal ? 'Voice AI banner enabled' : 'Voice AI banner hidden');
+      return nextVal;
+    });
+  };
+
+  const [isNativeEngine, setIsNativeEngine] = useState<boolean>(() => {
+    const stored = localStorage.getItem('spense_runtime_engine_v1');
+    return stored === 'native';
+  });
+
+  const handleToggleNativeEngine = () => {
+    setIsNativeEngine((prev) => {
+      const nextVal = !prev;
+      localStorage.setItem('spense_runtime_engine_v1', nextVal ? 'native' : 'web');
+      showToast(nextVal ? 'Switched to React Native (JavaScript) Engine' : 'Switched to Web Layout');
       return nextVal;
     });
   };
@@ -499,10 +514,15 @@ export default function App() {
         onToggleTheme={toggleTheme}
         showVoiceBanner={showVoiceBanner}
         onToggleVoiceBanner={handleToggleVoiceBanner}
+        isNativeEngine={isNativeEngine}
+        onToggleNativeEngine={handleToggleNativeEngine}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {isNativeEngine ? (
+        <ReactNativeApp onSwitchMode={handleToggleNativeEngine} />
+      ) : (
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* 1. Overview Dashboard */}
         {activeTab === 'overview' && (
           <DashboardOverview
@@ -621,105 +641,112 @@ export default function App() {
           />
         )}
       </main>
+      )}
 
       {/* Qalta Floating iOS Action Dock */}
-      <QaltaFloatingDock
-        onOpenVoice={() => setIsVoiceModalOpen(true)}
-        onOpenScanner={() => setIsScannerOpen(true)}
-        onOpenNaturalLog={() => setIsNaturalLogOpen(true)}
-        onOpenManualAdd={() => {
-          setExpenseToEdit(null);
-          setQuickAddDate(undefined);
-          setIsExpenseFormOpen(true);
-        }}
-        onOpenWallets={() => setIsWalletsModalOpen(true)}
-        theme={theme}
-      />
+      {!isNativeEngine && (
+        <QaltaFloatingDock
+          onOpenVoice={() => setIsVoiceModalOpen(true)}
+          onOpenScanner={() => setIsScannerOpen(true)}
+          onOpenNaturalLog={() => setIsNaturalLogOpen(true)}
+          onOpenManualAdd={() => {
+            setExpenseToEdit(null);
+            setQuickAddDate(undefined);
+            setIsExpenseFormOpen(true);
+          }}
+          onOpenWallets={() => setIsWalletsModalOpen(true)}
+          theme={theme}
+        />
+      )}
 
       {/* MODALS */}
-      {/* 1. Qalta AI Voice Modal */}
-      <QaltaVoiceModal
-        isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
-        onSaveExpense={handleSaveNewExpense}
-        preferredCurrency={currency}
-        wallets={wallets}
-        theme={theme}
-      />
+      {!isNativeEngine && (
+        <>
+          {/* 1. Qalta AI Voice Modal */}
+          <QaltaVoiceModal
+            isOpen={isVoiceModalOpen}
+            onClose={() => setIsVoiceModalOpen(false)}
+            onSaveExpense={handleSaveNewExpense}
+            preferredCurrency={currency}
+            wallets={wallets}
+            theme={theme}
+          />
 
-      {/* 2. OCR Camera Receipt Scanner */}
-      <ReceiptScannerModal
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onSaveExpense={handleSaveNewExpense}
-        preferredCurrency={currency}
-        theme={theme}
-      />
+          {/* 2. OCR Camera Receipt Scanner */}
+          <ReceiptScannerModal
+            isOpen={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            onSaveExpense={handleSaveNewExpense}
+            preferredCurrency={currency}
+            theme={theme}
+          />
 
-      {/* 3. Natural Language AI logger */}
-      <NaturalLoggerModal
-        isOpen={isNaturalLogOpen}
-        onClose={() => setIsNaturalLogOpen(false)}
-        onSaveExpense={handleSaveNewExpense}
-        preferredCurrency={currency}
-        theme={theme}
-      />
+          {/* 3. Natural Language AI logger */}
+          <NaturalLoggerModal
+            isOpen={isNaturalLogOpen}
+            onClose={() => setIsNaturalLogOpen(false)}
+            onSaveExpense={handleSaveNewExpense}
+            preferredCurrency={currency}
+            theme={theme}
+          />
 
-      {/* 4. Manual Add & Edit Multi-Type Transaction Form */}
-      <ExpenseFormModal
-        isOpen={isExpenseFormOpen}
-        onClose={() => {
-          setIsExpenseFormOpen(false);
-          setExpenseToEdit(null);
-          setQuickAddDate(undefined);
-        }}
-        onSave={handleUpdateExpense}
-        expenseToEdit={expenseToEdit}
-        preferredCurrency={currency}
-        wallets={wallets}
-        initialDate={quickAddDate}
-        theme={theme}
-      />
+          {/* 4. Manual Add & Edit Multi-Type Transaction Form */}
+          <ExpenseFormModal
+            isOpen={isExpenseFormOpen}
+            onClose={() => {
+              setIsExpenseFormOpen(false);
+              setExpenseToEdit(null);
+              setQuickAddDate(undefined);
+            }}
+            onSave={handleUpdateExpense}
+            expenseToEdit={expenseToEdit}
+            preferredCurrency={currency}
+            wallets={wallets}
+            initialDate={quickAddDate}
+            theme={theme}
+          />
 
-      {/* 5. Receipt High-Res Inspector */}
-      <ReceiptDetailModal
-        isOpen={Boolean(selectedExpenseForReceipt)}
-        expense={selectedExpenseForReceipt}
-        onClose={() => setSelectedExpenseForReceipt(null)}
-        onEdit={(exp) => {
-          setSelectedExpenseForReceipt(null);
-          setExpenseToEdit(exp);
-          setIsExpenseFormOpen(true);
-        }}
-        onDelete={(id) => {
-          handleDeleteExpense(id);
-          setSelectedExpenseForReceipt(null);
-        }}
-        theme={theme}
-      />
+          {/* 5. Receipt High-Res Inspector */}
+          <ReceiptDetailModal
+            isOpen={Boolean(selectedExpenseForReceipt)}
+            expense={selectedExpenseForReceipt}
+            onClose={() => setSelectedExpenseForReceipt(null)}
+            onEdit={(exp) => {
+              setSelectedExpenseForReceipt(null);
+              setExpenseToEdit(exp);
+              setIsExpenseFormOpen(true);
+            }}
+            onDelete={(id) => {
+              handleDeleteExpense(id);
+              setSelectedExpenseForReceipt(null);
+            }}
+            theme={theme}
+          />
 
-      {/* 6. Multi-Wallet Manager Modal */}
-      <WalletsManagerModal
-        isOpen={isWalletsModalOpen}
-        onClose={() => setIsWalletsModalOpen(false)}
-        wallets={wallets}
-        currency={currency}
-        theme={theme}
-        onAddWallet={handleAddWallet}
-        onUpdateWallet={handleUpdateWallet}
-        onDeleteWallet={handleDeleteWallet}
-        onOpenTransfer={() => setIsTransferModalOpen(true)}
-      />
+          {/* 6. Multi-Wallet Manager Modal */}
+          <WalletsManagerModal
+            isOpen={isWalletsModalOpen}
+            onClose={() => setIsWalletsModalOpen(false)}
+            wallets={wallets}
+            currency={currency}
+            theme={theme}
+            onAddWallet={handleAddWallet}
+            onUpdateWallet={handleUpdateWallet}
+            onDeleteWallet={handleDeleteWallet}
+            onOpenTransfer={() => setIsTransferModalOpen(true)}
+          />
 
-      {/* 7. Account-to-Account Transfer Modal */}
-      <TransferModal
-        isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
-        wallets={wallets}
-        currency={currency}
-        theme={theme}
-        onExecuteTransfer={handleExecuteTransfer}
-      />
+          {/* 7. Account-to-Account Transfer Modal */}
+          <TransferModal
+            isOpen={isTransferModalOpen}
+            onClose={() => setIsTransferModalOpen(false)}
+            wallets={wallets}
+            currency={currency}
+            theme={theme}
+            onExecuteTransfer={handleExecuteTransfer}
+          />
+        </>
+      )}
     </div>
   );
 }

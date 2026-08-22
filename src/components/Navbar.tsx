@@ -41,6 +41,8 @@ interface Props {
   onToggleTheme: () => void;
   showVoiceBanner?: boolean;
   onToggleVoiceBanner?: () => void;
+  isNativeEngine?: boolean;
+  onToggleNativeEngine?: () => void;
 }
 
 export const Navbar: React.FC<Props> = ({
@@ -57,6 +59,8 @@ export const Navbar: React.FC<Props> = ({
   onToggleTheme,
   showVoiceBanner = true,
   onToggleVoiceBanner,
+  isNativeEngine = false,
+  onToggleNativeEngine,
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement | null>(null);
@@ -259,6 +263,36 @@ export const Navbar: React.FC<Props> = ({
                       <span
                         className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                           showVoiceBanner ? 'translate-x-4' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                )}
+
+                {/* React Native JS Runtime Mode */}
+                {onToggleNativeEngine && (
+                  <div className="border-t theme-border pt-3 flex items-center justify-between">
+                    <div className="space-y-0.5 pr-2">
+                      <span className="text-[11px] font-semibold theme-text-main block flex items-center gap-1">
+                        <span>React Native (JS) Engine</span>
+                      </span>
+                      <span className="text-[10px] theme-text-muted block">
+                        {isNativeEngine ? 'Native mobile layout' : 'Standard web layout'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onToggleNativeEngine}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        isNativeEngine ? 'bg-[#D2AF26]' : 'theme-bg-muted'
+                      }`}
+                      id="settings-toggle-rn-engine"
+                      role="switch"
+                      aria-checked={isNativeEngine}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                          isNativeEngine ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </button>
